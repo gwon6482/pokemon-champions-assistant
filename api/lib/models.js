@@ -21,6 +21,19 @@ const pokemonSchema = new mongoose.Schema({
     spDef:   { type: Number, default: 0 },
     speed:   { type: Number, default: 0 }
   },
+  abilities: [{
+    nameKo: String,
+    nameEn: String,
+    isHidden: Boolean
+  }],
+  moves: [{
+    nameKo: String,
+    nameEn: String,
+    type: String,
+    damageClass: String, // physical / special / status
+    power: Number,
+    pp: Number
+  }],
   availableInChampions: { type: Boolean, default: true }
 }, { timestamps: true })
 

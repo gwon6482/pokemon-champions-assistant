@@ -20,7 +20,7 @@
           :key="i"
           :slot="slot"
           :index="i"
-          @click="onSlotClick"
+          @select="onSlotClick"
           @remove="removeSlot"
         />
       </div>
@@ -147,8 +147,10 @@ const onPokemonSelect = (pokemon) => {
   showSlotPicker.value = true
 }
 
-const onSlotClick = (index) => {
+const onSlotClick = async (index) => {
   if (rosterStore.slots[index]) {
+    // 최신 데이터(moves/abilities 포함) 보장을 위해 fetch 후 열기
+    await rosterStore.fetchRoster()
     editingSlot.value = rosterStore.slots[index]
   }
 }

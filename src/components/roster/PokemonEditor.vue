@@ -26,14 +26,13 @@
         <div>
           <label class="block text-xs text-gray-400 mb-1">닉네임</label>
           <input v-model="form.nickname" type="text" placeholder="(옵션)"
-            class="w-full bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+            class="input-base" />
         </div>
 
         <!-- 성격 -->
         <div>
           <label class="block text-xs text-gray-400 mb-1">성격</label>
-          <select v-model="form.nature"
-            class="w-full bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500">
+          <select v-model="form.nature" class="input-base">
             <option value="">선택 안 함</option>
             <option v-for="n in NATURES" :key="n" :value="n">{{ n }}</option>
           </select>
@@ -42,29 +41,105 @@
         <!-- 특성 -->
         <div>
           <label class="block text-xs text-gray-400 mb-1">특성</label>
-          <input v-model="form.ability" type="text" placeholder="특성 이름"
-            class="w-full bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+          <div v-if="pokemonAbilities.length" class="space-y-1">
+            <label
+              v-for="a in pokemonAbilities"
+              :key="a.nameKo"
+              class="flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors"
+              :class="form.ability === a.nameKo
+                ? 'bg-blue-600/20 border-blue-500 text-white'
+                : 'bg-surface-700 border-surface-600 text-gray-300 hover:border-gray-500'"
+            >
+              <input
+                type="radio"
+                :value="a.nameKo"
+                v-model="form.ability"
+                class="accent-blue-500"
+              />
+              <span class="text-sm font-medium">{{ a.nameKo }}</span>
+              <span v-if="a.isHidden" class="text-xs text-yellow-400 ml-auto">숨겨진 특성</span>
+            </label>
+          </div>
+          <!-- 데이터 로딩 전 폴백 -->
+          <input
+            v-else
+            v-model="form.ability"
+            type="text"
+            placeholder="특성 이름 직접 입력"
+            class="input-base"
+          />
         </div>
 
         <!-- 도구 -->
         <div>
           <label class="block text-xs text-gray-400 mb-1">지닌 도구</label>
           <input v-model="form.heldItem" type="text" placeholder="도구 이름"
-            class="w-full bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500" />
+            class="input-base" />
         </div>
 
         <!-- 기술 4개 -->
         <div>
-          <label class="block text-xs text-gray-400 mb-1">기술 (최대 4개)</label>
+          <label class="block text-xs text-gray-400 mb-2">기술 (최대 4개)</label>
           <div class="grid grid-cols-2 gap-2">
-            <input
-              v-for="i in 4" :key="i"
-              v-model="form.moves[i - 1]"
-              type="text"
-              :placeholder="`기술 ${i}`"
-              class="bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500"
-            />
+            <div v-for="i in 4" :key="i" class="relative">
+              <!-- 선택된 기술 표시 -->
+              <div
+                v-if="form.moves[i - 1]"
+                class="flex items-center gap-2 bg-surface-700 border border-blue-500 rounded-lg px-3 py-2 text-sm"
+              >
+                <span
+                  v-if="getMoveType(form.moves[i - 1])"
+                  class="w-2 h-2 rounded-full flex-shrink-0"
+                  :style="{ backgroundColor: TYPE_COLORS[getMoveType(form.moves[i - 1])] }"
+                />
+                <span class="text-white flex-1 truncate">{{ form.moves[i - 1] }}</span>
+                <button
+                  class="text-gray-400 hover:text-red-400 flex-shrink-0"
+                  @click="form.moves[i - 1] = ''"
+                >&#x2715;</button>
+              </div>
+              <!-- 빈 슬롯: 드롭다운 -->
+              <div v-else class="relative">
+                <select
+                  class="input-base appearance-none"
+                  @change="e => { selectMove(i - 1, e.target.value); e.target.value = '' }"
+                >
+                  <option value="">기술 {{ i }} 선택...</option>
+                  <optgroup label="물리기술">
+                    <option
+                      v-for="m in physicalMoves"
+                      :key="m.nameKo"
+                      :value="m.nameKo"
+                      :disabled="form.moves.includes(m.nameKo)"
+                    >{{ m.nameKo }} ({{ TYPE_KO[m.type] ?? m.type }}, {{ m.power ?? '—' }})
+                    </option>
+                  </optgroup>
+                  <optgroup label="특수기술">
+                    <option
+                      v-for="m in specialMoves"
+                      :key="m.nameKo"
+                      :value="m.nameKo"
+                      :disabled="form.moves.includes(m.nameKo)"
+                    >{{ m.nameKo }} ({{ TYPE_KO[m.type] ?? m.type }}, {{ m.power ?? '—' }})
+                    </option>
+                  </optgroup>
+                  <optgroup label="변화기술">
+                    <option
+                      v-for="m in statusMoves"
+                      :key="m.nameKo"
+                      :value="m.nameKo"
+                      :disabled="form.moves.includes(m.nameKo)"
+                    >{{ m.nameKo }} ({{ TYPE_KO[m.type] ?? m.type }})
+                    </option>
+                  </optgroup>
+                </select>
+              </div>
+            </div>
           </div>
+          <!-- 기술 데이터 없을 때 안내 -->
+          <p v-if="!pokemonMoves.length" class="text-xs text-gray-500 mt-1">
+            기술 데이터를 불러오는 중이거나 아직 수집되지 않았습니다.
+          </p>
         </div>
 
         <!-- EV 노력치 -->
@@ -98,6 +173,7 @@
 <script setup>
 import { reactive, computed } from 'vue'
 import TypeBadge from '@/components/pokemon/TypeBadge.vue'
+import { TYPE_COLORS, TYPE_KO } from '@/utils/typeChart.js'
 
 const props = defineProps({
   slot: { type: Object, required: true }
@@ -119,10 +195,26 @@ const EV_STATS = [
   { key: 'speed', label: '스피드' }
 ]
 
+// 포켓몬 DB 데이터에서 특성/기술 가져오기
+const pokemonAbilities = computed(() => props.slot.pokemonId?.abilities ?? [])
+const pokemonMoves     = computed(() => props.slot.pokemonId?.moves ?? [])
+
+const physicalMoves = computed(() => pokemonMoves.value.filter(m => m.damageClass === 'physical'))
+const specialMoves  = computed(() => pokemonMoves.value.filter(m => m.damageClass === 'special'))
+const statusMoves   = computed(() => pokemonMoves.value.filter(m => m.damageClass === 'status'))
+
+// 기술 이름으로 타입 조회
+const moveTypeMap = computed(() => {
+  const map = {}
+  pokemonMoves.value.forEach(m => { map[m.nameKo] = m.type })
+  return map
+})
+const getMoveType = (nameKo) => moveTypeMap.value[nameKo]
+
 const form = reactive({
   nickname: props.slot.nickname || '',
-  nature: props.slot.nature || '',
-  ability: props.slot.ability || '',
+  nature:   props.slot.nature || '',
+  ability:  props.slot.ability || '',
   heldItem: props.slot.heldItem || '',
   moves: [...(props.slot.moves || []), '', '', '', ''].slice(0, 4),
   evTraining: {
@@ -139,6 +231,11 @@ const evTotal = computed(() =>
   Object.values(form.evTraining).reduce((a, b) => a + (b || 0), 0)
 )
 
+const selectMove = (index, value) => {
+  if (!value) return
+  form.moves[index] = value
+}
+
 const save = () => {
   emit('save', {
     ...form,
@@ -146,3 +243,9 @@ const save = () => {
   })
 }
 </script>
+
+<style scoped>
+.input-base {
+  @apply w-full bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500;
+}
+</style>

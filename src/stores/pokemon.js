@@ -20,7 +20,7 @@ export const usePokemonStore = defineStore('pokemon', () => {
     try {
       const query = new URLSearchParams({
         page: params.page || 1,
-        limit: params.limit || 200,
+        limit: params.limit || 300,
         championsOnly: params.championsOnly !== false,
         ...(params.q && { q: params.q }),
         ...(params.types?.length && { types: params.types.join(',') })

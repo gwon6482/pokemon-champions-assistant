@@ -7,7 +7,7 @@ export default async function handler(req, res) {
 
   await connectDB()
 
-  const { id } = req.query
+  const id = req.query.id || req.params?.id
 
   if (req.method !== 'GET') {
     return res.status(405).json({ error: '허용되지 않는 메서드입니다.' })

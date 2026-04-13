@@ -21,10 +21,17 @@
     <div v-else class="grid md:grid-cols-2 gap-6">
       <!-- 왼쪽: 상대 파티 -->
       <section>
-        <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">
-          상대 파티
-          <span class="text-gray-500 font-normal normal-case ml-1">(클릭해서 대처법 확인)</span>
-        </h2>
+        <div class="flex items-center justify-between mb-3">
+          <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wide">
+            상대 파티
+          </h2>
+          <span class="text-xs text-gray-400">
+            출전 선택
+            <span :class="opponentCombo.length === battleStore.comboSize ? 'text-green-400 font-semibold' : 'text-blue-400'">
+              {{ opponentCombo.length }}/{{ battleStore.comboSize }}
+            </span>
+          </span>
+        </div>
         <div class="space-y-2">
           <MatchupCard
             v-for="opp in battleStore.opponentParty"
@@ -32,7 +39,9 @@
             :pokemon="opp"
             :matchup="getMyBestMatchup(opp)"
             :highlighted="battleStore.activeOpponent?._id === opp._id"
-            @click="selectOpponent"
+            :selected="isOpponentSelected(opp)"
+            :disabled="isOpponentDisabled(opp)"
+            @click="toggleOpponent"
           />
         </div>
       </section>
@@ -82,6 +91,71 @@
       </section>
     </div>
 
+    <!-- 상대 조합 상성 분석표 -->
+    <section v-if="opponentCombo.length === battleStore.comboSize" class="animate-fade-in">
+      <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">상성 분석</h2>
+      <div class="card overflow-x-auto">
+        <table class="w-full text-sm">
+          <!-- 헤더: 상대 포켓몬 -->
+          <thead>
+            <tr class="border-b border-surface-700">
+              <th class="p-3 text-left text-gray-500 font-normal w-24">내 포켓몬</th>
+              <th
+                v-for="opp in opponentCombo"
+                :key="opp._id"
+                class="p-2 text-center"
+              >
+                <div class="flex flex-col items-center gap-1">
+                  <img
+                    v-if="opp.imageUrl"
+                    :src="opp.imageUrl"
+                    class="w-9 h-9 object-contain mx-auto"
+                  />
+                  <span class="text-xs text-gray-300 leading-tight">{{ opp.name?.ko }}</span>
+                  <div class="flex gap-0.5 justify-center flex-wrap">
+                    <TypeBadge v-for="t in opp.types" :key="t" :type="t" />
+                  </div>
+                </div>
+              </th>
+            </tr>
+          </thead>
+          <!-- 행: 내 포켓몬 -->
+          <tbody>
+            <tr
+              v-for="slot in myComboDisplay"
+              :key="slot._id || slot.pokemonId?._id"
+              class="border-b border-surface-800 last:border-0"
+            >
+              <td class="p-3">
+                <div class="flex items-center gap-2">
+                  <img
+                    v-if="(slot.pokemonId || slot).imageUrl"
+                    :src="(slot.pokemonId || slot).imageUrl"
+                    class="w-7 h-7 object-contain flex-shrink-0"
+                  />
+                  <span class="text-xs text-gray-300 leading-tight">
+                    {{ slot.nickname || (slot.pokemonId || slot).name?.ko }}
+                  </span>
+                </div>
+              </td>
+              <td
+                v-for="opp in opponentCombo"
+                :key="opp._id"
+                class="p-2 text-center"
+              >
+                <span
+                  class="inline-block px-2 py-0.5 rounded text-xs font-bold"
+                  :class="matchupCellClass(getMatchup((slot.pokemonId || slot).types || [], opp.types || []))"
+                >
+                  {{ matchupCellLabel(getMatchup((slot.pokemonId || slot).types || [], opp.types || [])) }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
     <!-- 배틀 종료 -->
     <section v-if="battleStore.myCombo.length || battleStore.opponentParty.length">
       <div class="card p-4">
@@ -125,12 +199,14 @@ import { useRosterStore } from '@/stores/roster.js'
 import { getMatchup } from '@/utils/typeChart.js'
 import MatchupCard from '@/components/battle/MatchupCard.vue'
 import ActivePokemon from '@/components/battle/ActivePokemon.vue'
+import TypeBadge from '@/components/pokemon/TypeBadge.vue'
 
 const battleStore = useBattleStore()
 const rosterStore = useRosterStore()
 
 const battleNote = ref('')
 const savedToast = ref(false)
+const opponentCombo = ref([])
 
 const results = [
   { value: 'win',  label: '승리', class: 'bg-green-700 hover:bg-green-600 text-white' },
@@ -150,8 +226,21 @@ const getMyBestMatchup = (opp) => {
   return matchups.length ? Math.max(...matchups) : 1
 }
 
-const selectOpponent = (opp) => {
-  battleStore.activeOpponent = battleStore.activeOpponent?._id === opp._id ? null : opp
+const isOpponentSelected = (opp) => opponentCombo.value.some(p => p._id === opp._id)
+
+const isOpponentDisabled = (opp) =>
+  opponentCombo.value.length >= battleStore.comboSize && !isOpponentSelected(opp)
+
+const toggleOpponent = (opp) => {
+  if (isOpponentSelected(opp)) {
+    opponentCombo.value = opponentCombo.value.filter(p => p._id !== opp._id)
+    if (battleStore.activeOpponent?._id === opp._id) battleStore.activeOpponent = null
+  } else {
+    if (opponentCombo.value.length >= battleStore.comboSize) return
+    opponentCombo.value.push(opp)
+    battleStore.activeOpponent = opp
+  }
+  battleStore.opponentCombo = opponentCombo.value
 }
 
 const isMyActive = (pokemon) => {
@@ -177,6 +266,24 @@ const counterList = computed(() => {
     })
     .sort((a, b) => b.matchup - a.matchup)
 })
+
+const matchupCellClass = (mult) => {
+  if (mult >= 4)   return 'bg-green-500/30 text-green-300'
+  if (mult >= 2)   return 'bg-green-900/40 text-green-400'
+  if (mult === 0)  return 'bg-surface-700 text-gray-600'
+  if (mult < 1)    return 'bg-red-900/30 text-red-400'
+  return 'text-gray-500'
+}
+
+const matchupCellLabel = (mult) => {
+  if (mult === 0)    return '무효'
+  if (mult === 0.25) return '¼배'
+  if (mult === 0.5)  return '½배'
+  if (mult === 1)    return '1배'
+  if (mult === 2)    return '2배'
+  if (mult === 4)    return '4배'
+  return `${mult}배`
+}
 
 const saveResult = async (result) => {
   await battleStore.saveRecord(result, battleNote.value)

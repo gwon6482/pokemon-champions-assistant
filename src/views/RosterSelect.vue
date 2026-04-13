@@ -85,7 +85,7 @@
       </div>
 
       <!-- 포켓몬 선택 패널 -->
-      <div class="card p-4 space-y-4">
+      <div v-if="battleStore.opponentParty.length < 6" class="card p-4 space-y-4">
         <PokemonSearch />
         <LoadingSpinner v-if="pokemonStore.loading" />
         <PokemonGrid
@@ -96,39 +96,58 @@
           @select="onOpponentSelect"
         />
       </div>
+      <div v-else class="text-center text-xs text-gray-500 py-2">
+        상대 파티가 모두 선택되었습니다.
+        <button class="text-blue-400 hover:underline ml-1" @click="battleStore.clearOpponents()">초기화</button>
+      </div>
     </section>
+
+    <!-- 파티 부족 안내 -->
+    <div
+      v-if="!rosterStore.isEmpty && rosterStore.filledSlots.length < battleStore.comboSize"
+      class="text-center text-yellow-400 text-sm"
+    >
+      조합 추천을 받으려면 파티에 포켓몬이 {{ battleStore.comboSize }}마리 이상 필요합니다.
+      (현재 {{ rosterStore.filledSlots.length }}마리)
+    </div>
 
     <!-- 추천 버튼 -->
     <div
-      v-if="battleStore.opponentParty.length >= 1 && !rosterStore.isEmpty"
+      v-if="battleStore.opponentParty.length >= 1 && rosterStore.filledSlots.length >= battleStore.comboSize"
       class="sticky bottom-20 md:bottom-6"
     >
       <button
         class="w-full btn-primary py-3 text-base font-semibold shadow-lg"
-        :disabled="battleStore.loading"
         @click="getRecommendations"
       >
-        <span v-if="battleStore.loading">분석 중...</span>
-        <span v-else>AI 조합 추천 받기 ({{ battleStore.comboSize }}마리)</span>
+        조합 추천 받기 ({{ battleStore.comboSize }}마리)
       </button>
     </div>
 
+    <!-- 에러 메시지 -->
+    <div v-if="recommendError" class="card p-4 text-red-400 text-sm text-center">
+      {{ recommendError }}
+    </div>
+
     <!-- 추천 결과 -->
-    <section v-if="battleStore.recommendations.length">
+    <section v-if="recommendations.length">
       <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">추천 조합</h2>
-      <div class="space-y-3">
+      <div class="space-y-4">
         <div
-          v-for="(rec, i) in battleStore.recommendations"
+          v-for="(rec, i) in recommendations"
           :key="i"
           class="card p-4 animate-fade-in"
         >
+          <!-- 헤더 -->
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
               <span class="font-semibold text-white">조합 {{ i + 1 }}</span>
-              <span class="text-xs px-2 py-0.5 rounded-full font-semibold"
+              <span
+                class="text-xs px-2 py-0.5 rounded-full font-semibold"
                 :class="rec.score >= 75 ? 'bg-green-600/20 text-green-400'
                   : rec.score >= 50 ? 'bg-yellow-600/20 text-yellow-400'
-                  : 'bg-red-600/20 text-red-400'">
+                  : 'bg-red-600/20 text-red-400'"
+              >
                 {{ rec.score }}점
               </span>
             </div>
@@ -141,23 +160,80 @@
             </RouterLink>
           </div>
 
-          <div class="flex gap-2 mb-3 flex-wrap">
+          <!-- 포켓몬 -->
+          <div class="flex gap-2 mb-4 flex-wrap">
             <div
-              v-for="name in rec.combo"
-              :key="name"
-              class="text-center"
+              v-for="slot in rec.combo"
+              :key="slot._id"
+              class="flex flex-col items-center gap-1 p-2 bg-surface-700 rounded-lg"
             >
-              <p class="text-sm font-medium text-white">{{ name }}</p>
+              <img
+                v-if="slot.pokemonId?.imageUrl"
+                :src="slot.pokemonId.imageUrl"
+                class="w-10 h-10 object-contain"
+              />
+              <p class="text-xs font-medium text-white text-center">
+                {{ slot.nickname || slot.pokemonId?.name?.ko }}
+              </p>
+              <div class="flex gap-0.5 flex-wrap justify-center">
+                <TypeBadge v-for="t in slot.pokemonId?.types" :key="t" :type="t" />
+              </div>
             </div>
           </div>
 
-          <p class="text-sm text-gray-400">{{ rec.reason }}</p>
-          <p v-if="rec.strategy" class="text-sm text-blue-400 mt-1">{{ rec.strategy }}</p>
+          <!-- 분석 -->
+          <div class="space-y-2 text-sm border-t border-surface-700 pt-3">
+            <!-- 강한 상대 속성 -->
+            <div v-if="rec.analysis.strengths?.length" class="flex flex-wrap gap-1 items-baseline">
+              <span class="text-green-400 font-semibold text-xs shrink-0">강한 상대 속성</span>
+              <span class="text-gray-300 text-xs">{{ rec.analysis.strengths.join(' · ') }}</span>
+            </div>
 
-          <div v-if="rec.warnings?.length" class="mt-2 space-y-1">
-            <p v-for="w in rec.warnings" :key="w" class="text-xs text-yellow-400">
-              &#x26A0;&#xFE0F; {{ w }}
-            </p>
+            <!-- 약한 상대 속성 -->
+            <div class="flex flex-wrap gap-1 items-baseline">
+              <span class="text-red-400 font-semibold text-xs shrink-0">약한 상대 속성</span>
+              <span v-if="rec.analysis.weaknesses?.length" class="text-gray-300 text-xs">
+                {{ rec.analysis.weaknesses.join(' · ') }}
+              </span>
+              <span v-else class="text-gray-500 text-xs">공통 약점 없음</span>
+            </div>
+
+            <!-- 역할 분담 -->
+            <div v-if="rec.analysis.roles?.length">
+              <p class="text-blue-400 font-semibold text-xs mb-1">역할 분담</p>
+              <ul class="space-y-0.5">
+                <li
+                  v-for="r in rec.analysis.roles"
+                  :key="r.name"
+                  class="text-gray-400 text-xs flex justify-between"
+                >
+                  <span>{{ r.name }} — {{ r.role }}</span>
+                  <span class="text-gray-500">스피드 {{ r.speed }}</span>
+                </li>
+              </ul>
+            </div>
+
+            <!-- 상대 파티 대응 -->
+            <div v-if="rec.analysis.opponentAnalysis?.length">
+              <p class="text-yellow-400 font-semibold text-xs mb-1">상대 파티 대응</p>
+              <ul class="space-y-0.5">
+                <li
+                  v-for="o in rec.analysis.opponentAnalysis"
+                  :key="o.name"
+                  class="text-gray-400 text-xs flex justify-between"
+                >
+                  <span>{{ o.name }} → {{ o.counter }}</span>
+                  <span
+                    :class="o.mult >= 4 ? 'text-green-400 font-semibold'
+                      : o.mult >= 2 ? 'text-green-500'
+                      : o.mult < 1 ? 'text-red-400'
+                      : 'text-gray-500'"
+                  >
+                    ×{{ o.mult }}
+                  </span>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       </div>
@@ -166,10 +242,11 @@
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { usePokemonStore } from '@/stores/pokemon.js'
 import { useRosterStore } from '@/stores/roster.js'
 import { useBattleStore } from '@/stores/battle.js'
+import { recommendCombos } from '@/utils/recommend.js'
 import PokemonSearch from '@/components/pokemon/PokemonSearch.vue'
 import PokemonGrid from '@/components/pokemon/PokemonGrid.vue'
 import TypeBadge from '@/components/pokemon/TypeBadge.vue'
@@ -179,6 +256,8 @@ const pokemonStore = usePokemonStore()
 const rosterStore = useRosterStore()
 const battleStore = useBattleStore()
 
+const recommendations = ref([])
+const recommendError = ref('')
 const opponentIds = computed(() => battleStore.opponentParty.map(p => p._id))
 
 onMounted(() => {
@@ -194,18 +273,25 @@ const onOpponentSelect = (pokemon) => {
   }
 }
 
-const getRecommendations = async () => {
-  const myPartyIds = rosterStore.filledSlots
-    .map(s => s.pokemonId?._id || s.pokemonId)
-    .filter(Boolean)
-  await battleStore.fetchRecommendations(myPartyIds)
+const getRecommendations = () => {
+  recommendError.value = ''
+  try {
+    const slots = [...rosterStore.filledSlots]
+    const opponents = [...battleStore.opponentParty]
+    console.log('[추천] 내 파티:', slots.length, '/ 상대:', opponents.length, '/ 모드:', battleStore.mode)
+    const result = recommendCombos(slots, opponents, battleStore.mode, 5)
+    console.log('[추천] 결과:', result.length, '개')
+    recommendations.value = result
+    if (!result.length) {
+      recommendError.value = '조합을 생성할 수 없습니다. 파티 슬롯을 확인해주세요.'
+    }
+  } catch (e) {
+    console.error('[추천 오류]', e)
+    recommendError.value = `오류가 발생했습니다: ${e.message}`
+  }
 }
 
 const selectCombo = (rec) => {
-  // 추천 조합 이름으로 내 파티에서 매칭
-  const matched = rosterStore.filledSlots.filter(slot =>
-    rec.combo.includes(slot.pokemonId?.name?.ko)
-  )
-  battleStore.myCombo = matched.map(s => s.pokemonId)
+  battleStore.myCombo = rec.combo.map(s => s.pokemonId || s)
 }
 </script>

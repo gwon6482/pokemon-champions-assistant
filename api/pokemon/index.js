@@ -12,7 +12,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { q, types, championsOnly, page = 1, limit = 50 } = req.query
+    const { q, types, championsOnly, page = 1, limit = 300 } = req.query
 
     const filter = {}
 

@@ -4,27 +4,18 @@
     <div class="flex items-center justify-between mb-3">
       <div class="flex items-center gap-2">
         <h3 class="font-semibold text-white">조합 {{ index + 1 }}</h3>
-        <span class="text-xs px-2 py-0.5 rounded-full font-semibold"
-          :class="scoreClass">
+        <span class="text-xs px-2 py-0.5 rounded-full font-semibold" :class="scoreClass">
           {{ combo.score }}점
         </span>
       </div>
-      <button
-        v-if="showSelect"
-        class="btn-primary text-xs px-3 py-1.5"
-        @click="$emit('select', combo)"
-      >
+      <button v-if="showSelect" class="btn-primary text-xs px-3 py-1.5" @click="$emit('select', combo)">
         이 조합 선택
       </button>
     </div>
 
     <!-- 포켓몬 목록 -->
-    <div class="flex gap-2 mb-3">
-      <div
-        v-for="slot in combo.combo"
-        :key="slot._id"
-        class="flex flex-col items-center gap-1"
-      >
+    <div class="flex gap-2 mb-4 flex-wrap">
+      <div v-for="slot in combo.combo" :key="slot._id" class="flex flex-col items-center gap-1">
         <div class="w-14 h-14 bg-surface-700 rounded-lg flex items-center justify-center">
           <img
             v-if="slot.pokemonId?.imageUrl"
@@ -35,7 +26,7 @@
           <span v-else class="text-xl">&#x2753;</span>
         </div>
         <p class="text-xs text-center text-gray-300 leading-tight">
-          {{ slot.pokemonId?.name?.ko || slot.name?.ko }}
+          {{ slot.nickname || slot.pokemonId?.name?.ko || slot.name?.ko }}
         </p>
         <div class="flex gap-0.5 flex-wrap justify-center">
           <TypeBadge
@@ -47,18 +38,38 @@
       </div>
     </div>
 
-    <!-- 추천 이유 -->
-    <p class="text-sm text-gray-400 leading-relaxed">{{ combo.reason }}</p>
+    <!-- 분석 -->
+    <div v-if="combo.analysis" class="space-y-2 text-sm border-t border-surface-700 pt-3">
+      <!-- 강한 상대 속성 -->
+      <div v-if="combo.analysis.strengths?.length" class="flex flex-wrap gap-1 items-baseline">
+        <span class="text-green-400 font-semibold text-xs shrink-0">강한 상대 속성</span>
+        <span class="text-gray-300 text-xs">{{ combo.analysis.strengths.join(' · ') }}</span>
+      </div>
 
-    <!-- 주의사항 -->
-    <div v-if="combo.warnings?.length" class="mt-2 space-y-1">
-      <p
-        v-for="w in combo.warnings"
-        :key="w"
-        class="text-xs text-yellow-400 flex items-start gap-1"
-      >
-        <span>&#x26A0;&#xFE0F;</span> {{ w }}
-      </p>
+      <!-- 약한 상대 속성 -->
+      <div v-if="combo.analysis.weaknesses?.length" class="flex flex-wrap gap-1 items-baseline">
+        <span class="text-red-400 font-semibold text-xs shrink-0">약한 상대 속성</span>
+        <span class="text-gray-300 text-xs">{{ combo.analysis.weaknesses.join(' · ') }}</span>
+      </div>
+      <div v-else class="flex gap-1 items-baseline">
+        <span class="text-red-400 font-semibold text-xs shrink-0">약한 상대 속성</span>
+        <span class="text-gray-500 text-xs">공통 약점 없음</span>
+      </div>
+
+      <!-- 역할 분담 -->
+      <div v-if="combo.analysis.roles?.length">
+        <p class="text-blue-400 font-semibold text-xs mb-1">역할 분담</p>
+        <ul class="space-y-0.5">
+          <li
+            v-for="r in combo.analysis.roles"
+            :key="r.name"
+            class="text-gray-400 text-xs flex justify-between"
+          >
+            <span>{{ r.name }} — {{ r.role }}</span>
+            <span class="text-gray-500">스피드 {{ r.speed }}</span>
+          </li>
+        </ul>
+      </div>
     </div>
   </div>
 </template>

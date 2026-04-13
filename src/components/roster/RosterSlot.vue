@@ -4,7 +4,7 @@
     :class="slot
       ? 'bg-surface-800 border-surface-600 hover:border-blue-400'
       : 'bg-surface-800/50 border-dashed border-surface-600 hover:border-surface-500'"
-    @click="$emit('click', index)"
+    @click="$emit('select', index)"
   >
     <template v-if="slot">
       <!-- 슬롯 번호 -->
@@ -56,5 +56,5 @@ defineProps({
   index: { type: Number, required: true }
 })
 
-defineEmits(['click', 'remove'])
+defineEmits(['select', 'remove'])
 </script>
