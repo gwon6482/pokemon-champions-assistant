@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center px-4 bg-surface-900">
-    <div class="w-full max-w-sm">
+  <div class="min-h-screen px-4 bg-surface-900">
+    <div class="w-full max-w-sm mx-auto pt-[25vh]">
       <!-- 로고 -->
       <div class="text-center mb-8">
         <span class="text-5xl">⚔️</span>
