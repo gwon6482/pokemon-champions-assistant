@@ -3,7 +3,7 @@
     <!-- 업데이트 공지 -->
     <div class="flex items-center gap-2 bg-blue-900/30 border border-blue-700/40 rounded-lg px-4 py-2.5 text-xs text-blue-300">
       <span>📢</span>
-      <span><b>[업데이트]</b> 전적에서 내 파티 전체 표시 기능이 추가되었습니다. 기존 전적은 데이터 호환 문제로 초기화되었습니다.</span>
+      <span><b>[업데이트]</b> 전적에서 내 파티 전체 표시 기능이 추가되었습니다. 기존 전적은 데이터 호환 문제로 초기화되었습니다. · 로스터 선택에서 내 조합을 직접 선택해 배틀로 바로 이동할 수 있습니다.</span>
     </div>
 
     <!-- 타이틀 -->

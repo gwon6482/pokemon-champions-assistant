@@ -84,17 +84,76 @@
       (현재 {{ rosterStore.filledSlots.length }}마리)
     </div>
 
-    <!-- 추천 버튼 -->
+    <!-- 추천 버튼 / 내 조합 직접 선택 -->
     <div
-      v-if="battleStore.opponentParty.length >= 1 && rosterStore.filledSlots.length >= battleStore.comboSize"
-      class="sticky bottom-20 md:bottom-6"
+      v-if="rosterStore.filledSlots.length >= battleStore.comboSize"
+      class="sticky bottom-20 md:bottom-6 space-y-2"
     >
       <button
+        v-if="battleStore.opponentParty.length >= 1"
         class="w-full btn-primary py-3 text-base font-semibold shadow-lg"
         @click="getRecommendations"
       >
         조합 추천 받기 ({{ battleStore.comboSize }}마리)
       </button>
+      <button
+        class="w-full py-3 text-base font-semibold rounded-xl bg-surface-700 hover:bg-surface-600 text-gray-200 shadow-lg transition-colors"
+        @click="openMyComboModal"
+      >
+        내 조합 사용하기
+      </button>
+    </div>
+
+    <!-- 내 조합 선택 모달 -->
+    <div v-if="showMyComboModal" class="modal-overlay" @click.self="showMyComboModal = false">
+      <div class="modal-content p-5">
+        <div class="flex items-center justify-between mb-1">
+          <h3 class="font-bold text-white">내 조합 선택</h3>
+          <span class="text-xs text-gray-400">
+            {{ myComboSelection.length }}/{{ battleStore.comboSize }} 선택
+          </span>
+        </div>
+        <p class="text-xs text-gray-500 mb-4">배틀에 출전할 {{ battleStore.comboSize }}마리를 선택하세요</p>
+
+        <div class="grid grid-cols-3 gap-2 mb-5">
+          <button
+            v-for="slot in rosterStore.filledSlots"
+            :key="slot._id"
+            class="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border-2 transition-all"
+            :class="isMyComboSelected(slot)
+              ? 'border-yellow-400 bg-yellow-900/20'
+              : myComboSelection.length >= battleStore.comboSize
+                ? 'border-surface-600 bg-surface-800 opacity-40 cursor-not-allowed'
+                : 'border-surface-600 bg-surface-700 hover:border-blue-500'"
+            @click="toggleMyComboSlot(slot)"
+          >
+            <img
+              v-if="slot.pokemonId?.imageUrl"
+              :src="slot.pokemonId.imageUrl"
+              class="w-12 h-12 object-contain"
+            />
+            <span v-else class="w-12 h-12 flex items-center justify-center text-2xl text-gray-600">?</span>
+            <p class="text-xs text-center text-gray-300 leading-tight w-full truncate">
+              {{ slot.nickname || slot.pokemonId?.name?.ko }}
+            </p>
+            <div class="flex gap-0.5 flex-wrap justify-center">
+              <TypeBadge v-for="t in slot.pokemonId?.types" :key="t" :type="t" />
+            </div>
+          </button>
+        </div>
+
+        <div class="flex gap-2">
+          <button class="btn-secondary flex-1" @click="showMyComboModal = false">취소</button>
+          <button
+            class="btn-primary flex-1"
+            :class="myComboSelection.length < battleStore.comboSize ? 'opacity-40 cursor-not-allowed' : ''"
+            :disabled="myComboSelection.length < battleStore.comboSize"
+            @click="confirmMyCombo"
+          >
+            배틀 시작
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- 에러 메시지 -->
@@ -216,6 +275,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { usePokemonStore } from '@/stores/pokemon.js'
 import { useRosterStore } from '@/stores/roster.js'
 import { useBattleStore } from '@/stores/battle.js'
@@ -225,9 +285,42 @@ import PokemonGrid from '@/components/pokemon/PokemonGrid.vue'
 import TypeBadge from '@/components/pokemon/TypeBadge.vue'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
+const router = useRouter()
 const pokemonStore = usePokemonStore()
 const rosterStore = useRosterStore()
 const battleStore = useBattleStore()
+
+const showMyComboModal = ref(false)
+const myComboSelection = ref([])
+
+const openMyComboModal = () => {
+  myComboSelection.value = []
+  showMyComboModal.value = true
+}
+
+const isMyComboSelected = (slot) => {
+  const id = slot.pokemonId?._id || slot._id
+  return myComboSelection.value.some(s => (s.pokemonId?._id || s._id) === id)
+}
+
+const toggleMyComboSlot = (slot) => {
+  if (isMyComboSelected(slot)) {
+    const id = slot.pokemonId?._id || slot._id
+    myComboSelection.value = myComboSelection.value.filter(
+      s => (s.pokemonId?._id || s._id) !== id
+    )
+  } else {
+    if (myComboSelection.value.length >= battleStore.comboSize) return
+    myComboSelection.value.push(slot)
+  }
+}
+
+const confirmMyCombo = () => {
+  if (myComboSelection.value.length < battleStore.comboSize) return
+  battleStore.myCombo = myComboSelection.value.map(s => s.pokemonId || s)
+  showMyComboModal.value = false
+  router.push('/battle')
+}
 
 const recommendations = ref([])
 const recommendError = ref('')
