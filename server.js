@@ -11,6 +11,7 @@ import rosterById from './api/roster/[id].js'
 import battleRecommend from './api/battle/recommend.js'
 import battleRecord from './api/battle/record.js'
 import records from './api/records/index.js'
+import moves from './api/moves/index.js'
 
 const app = express()
 app.use(express.json())
@@ -33,6 +34,7 @@ app.post('/api/battle/recommend', battleRecommend)
 app.post('/api/battle/record', battleRecord)
 
 app.get('/api/records', records)
+app.get('/api/moves', moves)
 
 const PORT = 3001
 
