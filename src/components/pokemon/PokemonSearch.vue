@@ -8,7 +8,8 @@
         type="text"
         placeholder="포켓몬 이름 검색 (한글/영어)"
         class="w-full bg-surface-700 border border-surface-600 rounded-lg pl-9 pr-4 py-2.5
-               text-white placeholder-gray-500 text-sm focus:outline-none focus:border-blue-500"
+               text-white placeholder-gray-500 focus:outline-none focus:border-blue-500"
+        style="font-size: 16px"
       />
       <button
         v-if="searchQuery"

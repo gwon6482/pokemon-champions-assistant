@@ -3,9 +3,20 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    overflow-x: hidden;
+  }
+
   body {
     @apply bg-surface-900 text-white font-sans;
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* iOS Safari: input focus 시 자동 줌 방지 */
+  input, textarea, select {
+    font-size: 16px;
   }
 
   * {
@@ -52,6 +63,7 @@
   }
 
   .input {
-    @apply bg-surface-700 border border-surface-600 rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors;
+    @apply bg-surface-700 border border-surface-600 rounded-lg px-3 py-2.5 text-white placeholder-gray-500 focus:outline-none focus:border-blue-500 transition-colors;
+    font-size: 16px;
   }
 }
