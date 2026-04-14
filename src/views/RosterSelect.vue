@@ -5,33 +5,6 @@
       <p class="text-sm text-gray-400 mt-1">상대 파티를 입력하고 최적 조합을 추천받으세요</p>
     </div>
 
-    <!-- 내 파티 미리보기 -->
-    <section>
-      <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">내 파티</h2>
-      <div v-if="rosterStore.isEmpty" class="card p-4 text-center text-gray-500 text-sm">
-        파티가 비어있습니다.
-        <RouterLink to="/" class="text-blue-400 hover:underline ml-1">파티 구성</RouterLink>
-        에서 먼저 포켓몬을 추가해주세요.
-      </div>
-      <div v-else class="flex gap-2 flex-wrap">
-        <div
-          v-for="slot in rosterStore.filledSlots"
-          :key="slot._id"
-          class="flex flex-col items-center gap-1 p-2 bg-surface-800 rounded-lg border border-surface-700"
-        >
-          <img
-            v-if="slot.pokemonId?.imageUrl"
-            :src="slot.pokemonId.imageUrl"
-            class="w-12 h-12 object-contain"
-          />
-          <p class="text-xs text-center text-gray-300">{{ slot.pokemonId?.name?.ko }}</p>
-          <div class="flex gap-0.5">
-            <TypeBadge v-for="t in slot.pokemonId?.types" :key="t" :type="t" />
-          </div>
-        </div>
-      </div>
-    </section>
-
     <!-- 배틀 모드 선택 -->
     <section class="flex gap-2">
       <button
