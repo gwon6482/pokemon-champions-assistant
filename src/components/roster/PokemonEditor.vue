@@ -141,8 +141,8 @@
               />
             </div>
           </div>
-          <p class="text-xs text-right mt-1" :class="evTotal > 510 ? 'text-red-400' : 'text-gray-500'">
-            합계: {{ evTotal }} / 510
+          <p class="text-xs text-right mt-1 text-gray-500">
+            합계: {{ evTotal }}
           </p>
         </div>
       </div>
@@ -150,7 +150,7 @@
       <!-- 버튼 -->
       <div class="flex gap-3 p-5 border-t border-surface-700">
         <button class="btn-secondary flex-1" @click="$emit('close')">취소</button>
-        <button class="btn-primary flex-1" :disabled="evTotal > 510" @click="save">저장</button>
+        <button class="btn-primary flex-1" @click="save">저장</button>
       </div>
     </div>
   </div>
