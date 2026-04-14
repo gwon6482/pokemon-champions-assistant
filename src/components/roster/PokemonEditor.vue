@@ -130,20 +130,69 @@
 
         <!-- EV 노력치 -->
         <div>
-          <label class="block text-xs text-gray-400 mb-2">노력치 (합계 510 이하)</label>
-          <div class="grid grid-cols-3 gap-2">
-            <div v-for="stat in EV_STATS" :key="stat.key">
-              <label class="block text-xs text-gray-500 mb-0.5">{{ stat.label }}</label>
-              <input
-                v-model.number="form.evTraining[stat.key]"
-                type="number" min="0" max="252"
-                class="w-full bg-surface-700 border border-surface-600 rounded-lg px-2 py-1.5 text-white text-sm focus:outline-none focus:border-blue-500"
-              />
+          <div class="flex items-center justify-between mb-3">
+            <label class="text-xs text-gray-400">노력치</label>
+            <div class="flex items-center gap-2">
+              <div class="h-1.5 w-28 bg-surface-700 rounded-full overflow-hidden">
+                <div
+                  class="h-full rounded-full transition-all"
+                  :class="ppUsed >= PP_TOTAL ? 'bg-red-500' : 'bg-blue-500'"
+                  :style="{ width: `${(ppUsed / PP_TOTAL) * 100}%` }"
+                />
+              </div>
+              <span class="text-xs font-mono" :class="ppUsed >= PP_TOTAL ? 'text-red-400' : 'text-gray-400'">
+                {{ ppUsed }}/{{ PP_TOTAL }}
+              </span>
             </div>
           </div>
-          <p class="text-xs text-right mt-1 text-gray-500">
-            합계: {{ evTotal }}
-          </p>
+
+          <div class="space-y-2">
+            <div v-for="stat in EV_STATS" :key="stat.key"
+              class="flex items-center gap-2"
+            >
+              <!-- 스탯명 + 기본값 -->
+              <div class="w-20 flex-shrink-0">
+                <span class="text-xs text-gray-300">{{ stat.label }}</span>
+                <span class="text-xs text-gray-600 ml-1.5">{{ baseStat(stat.key) }}</span>
+              </div>
+
+              <!-- 컨트롤 -->
+              <button
+                class="ev-btn text-gray-500 hover:text-white hover:bg-surface-600"
+                @click="setMin(stat.key)"
+              >MIN</button>
+
+              <button
+                class="ev-btn-icon text-gray-400 hover:text-white hover:bg-surface-600"
+                :disabled="form.evTraining[stat.key] <= 0"
+                @click="decrement(stat.key)"
+              >−</button>
+
+              <span class="w-7 text-center text-sm font-mono"
+                :class="form.evTraining[stat.key] > 0 ? 'text-blue-300' : 'text-gray-600'"
+              >{{ form.evTraining[stat.key] }}</span>
+
+              <button
+                class="ev-btn-icon text-gray-400 hover:text-white hover:bg-surface-600"
+                :disabled="form.evTraining[stat.key] >= EV_MAX || ppUsed >= PP_TOTAL"
+                @click="increment(stat.key)"
+              >+</button>
+
+              <button
+                class="ev-btn text-gray-500 hover:text-white hover:bg-surface-600"
+                :disabled="ppRemaining === 0 && form.evTraining[stat.key] >= EV_MAX"
+                @click="setMax(stat.key)"
+              >MAX</button>
+
+              <!-- 미니 게이지 -->
+              <div class="flex-1 h-1.5 bg-surface-700 rounded-full overflow-hidden">
+                <div
+                  class="h-full bg-blue-500 rounded-full transition-all"
+                  :style="{ width: `${(form.evTraining[stat.key] / EV_MAX) * 100}%` }"
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -213,9 +262,35 @@ const form = reactive({
   }
 })
 
-const evTotal = computed(() =>
+const PP_TOTAL = 66
+const EV_MAX   = 32
+
+const ppUsed = computed(() =>
   Object.values(form.evTraining).reduce((a, b) => a + (b || 0), 0)
 )
+const ppRemaining = computed(() => PP_TOTAL - ppUsed.value)
+
+const baseStat = (key) => props.slot.pokemonId?.baseStats?.[key] ?? '—'
+
+const increment = (key) => {
+  if (form.evTraining[key] >= EV_MAX) return
+  if (ppRemaining.value <= 0) return
+  form.evTraining[key]++
+}
+
+const decrement = (key) => {
+  if (form.evTraining[key] <= 0) return
+  form.evTraining[key]--
+}
+
+const setMin = (key) => {
+  form.evTraining[key] = 0
+}
+
+const setMax = (key) => {
+  const canAdd = ppRemaining.value + form.evTraining[key] // 현재 값 돌려받고 나서 쓸 수 있는 pp
+  form.evTraining[key] = Math.min(EV_MAX, canAdd)
+}
 
 const selectMove = (index, value) => {
   if (!value) return
@@ -233,5 +308,11 @@ const save = () => {
 <style scoped>
 .input-base {
   @apply w-full bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:border-blue-500;
+}
+.ev-btn {
+  @apply px-1.5 py-0.5 text-xs rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed;
+}
+.ev-btn-icon {
+  @apply w-6 h-6 flex items-center justify-center text-base rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed;
 }
 </style>
