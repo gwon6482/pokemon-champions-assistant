@@ -1,7 +1,7 @@
 import dotenv from 'dotenv'
 dotenv.config({ path: '.env.local' })
 import express from 'express'
-import { connectDB } from './api/lib/db.js'
+import { connectDB } from './lib/db.js'
 
 // API 핸들러 import
 import pokemonList from './api/pokemon/index.js'

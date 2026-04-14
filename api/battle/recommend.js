@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { connectDB } from '../lib/db.js'
-import { Pokemon } from '../lib/models.js'
-import { handleCors } from '../lib/cors.js'
+import { connectDB } from '../../lib/db.js'
+import { Pokemon } from '../../lib/models.js'
+import { handleCors } from '../../lib/cors.js'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 

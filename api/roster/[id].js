@@ -1,7 +1,7 @@
-import { connectDB } from '../lib/db.js'
-import { MyRoster } from '../lib/models.js'
-import { handleCors } from '../lib/cors.js'
-import { verifyToken } from '../lib/authMiddleware.js'
+import { connectDB } from '../../lib/db.js'
+import { MyRoster } from '../../lib/models.js'
+import { handleCors } from '../../lib/cors.js'
+import { verifyToken } from '../../lib/authMiddleware.js'
 
 export default async function handler(req, res) {
   if (handleCors(req, res)) return

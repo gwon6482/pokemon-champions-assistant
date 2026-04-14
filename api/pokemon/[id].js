@@ -1,6 +1,6 @@
-import { connectDB } from '../lib/db.js'
-import { Pokemon } from '../lib/models.js'
-import { handleCors } from '../lib/cors.js'
+import { connectDB } from '../../lib/db.js'
+import { Pokemon } from '../../lib/models.js'
+import { handleCors } from '../../lib/cors.js'
 
 export default async function handler(req, res) {
   if (handleCors(req, res)) return
