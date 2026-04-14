@@ -43,6 +43,16 @@
         <div class="flex gap-1 mt-0.5 flex-wrap">
           <TypeBadge v-for="t in pokemon.types" :key="t" :type="t" />
         </div>
+        <!-- 스탯 바 -->
+        <div v-if="pokemon.baseStats" class="mt-1.5 grid grid-cols-2 gap-x-2 gap-y-0.5">
+          <div v-for="s in statList" :key="s.key" class="flex items-center gap-1">
+            <span class="text-gray-500 w-6 text-right shrink-0" style="font-size:10px">{{ s.label }}</span>
+            <div class="flex-1 bg-surface-800 rounded-full overflow-hidden" style="height:4px">
+              <div class="h-full rounded-full" :class="s.color" :style="{ width: statBarWidth(pokemon.baseStats[s.key]) }"></div>
+            </div>
+            <span class="text-gray-400 w-6 shrink-0" style="font-size:10px">{{ pokemon.baseStats[s.key] }}</span>
+          </div>
+        </div>
       </div>
 
       <!-- 상성 배수 -->
@@ -58,6 +68,17 @@
 <script setup>
 import { computed } from 'vue'
 import TypeBadge from '@/components/pokemon/TypeBadge.vue'
+
+const statList = [
+  { key: 'hp',      label: 'HP',  color: 'bg-green-500' },
+  { key: 'attack',  label: '공',  color: 'bg-orange-500' },
+  { key: 'defense', label: '방',  color: 'bg-blue-500' },
+  { key: 'spAtk',   label: '특공', color: 'bg-purple-500' },
+  { key: 'spDef',   label: '특방', color: 'bg-teal-500' },
+  { key: 'speed',   label: '속',  color: 'bg-yellow-500' },
+]
+
+const statBarWidth = (val) => `${Math.min(100, Math.round((val / 255) * 100))}%`
 
 const props = defineProps({
   pokemon:     { type: Object,  required: true },

@@ -123,6 +123,11 @@
                   <div class="flex gap-0.5 justify-center flex-wrap" :class="isOpponentDisabled(opp) ? 'opacity-30' : ''">
                     <TypeBadge v-for="t in opp.types" :key="t" :type="t" />
                   </div>
+                  <!-- 역할 배지 -->
+                  <span
+                    class="text-xs px-1.5 py-0.5 rounded font-medium"
+                    :class="[roleBadgeClass(getOppRole(opp)), isOpponentDisabled(opp) ? 'opacity-30' : '']"
+                  >{{ getOppRole(opp) }}</span>
                   <!-- 선택 표시 -->
                   <span v-if="isOpponentSelected(opp)" class="text-green-400 text-xs font-bold">✓ 출전</span>
                 </div>
@@ -143,9 +148,14 @@
                     :src="(slot.pokemonId || slot).imageUrl"
                     class="w-7 h-7 object-contain flex-shrink-0"
                   />
-                  <span class="text-xs text-gray-300 leading-tight">
-                    {{ slot.nickname || (slot.pokemonId || slot).name?.ko }}
-                  </span>
+                  <div class="flex flex-col gap-0.5">
+                    <span class="text-xs text-gray-300 leading-tight">
+                      {{ slot.nickname || (slot.pokemonId || slot).name?.ko }}
+                    </span>
+                    <span class="text-xs px-1.5 py-0.5 rounded font-medium self-start" :class="roleBadgeClass(getMySlotRole(slot))">
+                      {{ getMySlotRole(slot) }}
+                    </span>
+                  </div>
                 </div>
               </td>
               <td
@@ -311,6 +321,39 @@ const matchupCellClassDef = (mult) => {
   if (mult === 0)  return 'bg-surface-700 text-gray-600'
   if (mult < 1)    return 'bg-green-900/30 text-green-400'
   return 'text-gray-600'
+}
+
+// 역할 판단: 내 포켓몬(로스터 슬롯) - 기술 구성 우선, 없으면 기본 스탯
+const getMySlotRole = (slot) => {
+  const pokemon = slot.pokemonId || slot
+  const b = pokemon.baseStats || {}
+  const moveData = (slot.moves || []).filter(Boolean)
+    .map(n => (pokemon.moves || []).find(m => m.nameKo === n))
+    .filter(Boolean)
+  const hasPhys = moveData.some(m => m.damageClass === 'physical')
+  const hasSpec = moveData.some(m => m.damageClass === 'special')
+  if (hasPhys && !hasSpec) return '물리'
+  if (!hasPhys && hasSpec) return '특수'
+  if (b.hp + b.defense + b.spDef > 310 && b.attack < 100 && b.spAtk < 100) return '탱커'
+  if (b.attack > (b.spAtk || 0) + 25) return '물리'
+  if ((b.spAtk || 0) > b.attack + 25) return '특수'
+  return '균형'
+}
+
+// 역할 판단: 상대 포켓몬(기본 스탯 기준)
+const getOppRole = (pokemon) => {
+  const b = pokemon.baseStats || {}
+  if (b.hp + b.defense + b.spDef > 310 && b.attack < 100 && b.spAtk < 100) return '탱커'
+  if (b.attack > (b.spAtk || 0) + 25) return '물리'
+  if ((b.spAtk || 0) > b.attack + 25) return '특수'
+  return '균형'
+}
+
+const roleBadgeClass = (role) => {
+  if (role === '물리') return 'bg-orange-900/50 text-orange-300'
+  if (role === '특수') return 'bg-blue-900/50 text-blue-300'
+  if (role === '탱커') return 'bg-green-900/50 text-green-300'
+  return 'bg-surface-700 text-gray-400'
 }
 
 const matchupCellLabel = (mult) => {
