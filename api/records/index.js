@@ -27,7 +27,7 @@ export default async function handler(req, res) {
 
     const [records, total] = await Promise.all([
       BattleRecord.find(filter)
-        .populate('myCombo opponentParty opponentCombo', 'name types imageUrl')
+        .populate('myParty myCombo opponentParty opponentCombo', 'name types imageUrl')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit))

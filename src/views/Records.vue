@@ -62,16 +62,19 @@
             </div>
           </div>
 
-          <!-- 내 조합 vs 상대 -->
+          <!-- 내 파티 vs 상대 파티 -->
           <div class="flex items-center gap-3">
-            <!-- 내 조합 -->
+            <!-- 내 파티 (출전 포켓몬 하이라이트) -->
             <div class="flex gap-1 flex-wrap flex-1">
               <img
-                v-for="p in rec.myCombo"
+                v-for="p in rec.myParty"
                 :key="p._id"
                 :src="p.imageUrl"
                 :title="p.name?.ko"
-                class="w-9 h-9 object-contain bg-surface-700 rounded-lg"
+                class="w-9 h-9 object-contain rounded-lg transition-opacity"
+                :class="isInMyCombo(p, rec)
+                  ? 'bg-surface-600 ring-1 ring-yellow-400'
+                  : 'bg-surface-700 opacity-30'"
               />
             </div>
 
@@ -161,6 +164,9 @@ const fetchRecords = async (p = 1) => {
 const loadMore = () => fetchRecords(page.value + 1)
 
 onMounted(() => fetchRecords())
+
+const isInMyCombo = (pokemon, rec) =>
+  rec.myCombo?.some(c => c._id === pokemon._id) ?? false
 
 const isInCombo = (pokemon, rec) =>
   rec.opponentCombo?.some(c => c._id === pokemon._id) ?? false
