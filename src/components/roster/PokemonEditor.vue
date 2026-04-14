@@ -41,26 +41,12 @@
         <!-- 특성 -->
         <div>
           <label class="block text-xs text-gray-400 mb-1">특성</label>
-          <div v-if="pokemonAbilities.length" class="space-y-1">
-            <label
-              v-for="a in pokemonAbilities"
-              :key="a.nameKo"
-              class="flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer transition-colors"
-              :class="form.ability === a.nameKo
-                ? 'bg-blue-600/20 border-blue-500 text-white'
-                : 'bg-surface-700 border-surface-600 text-gray-300 hover:border-gray-500'"
-            >
-              <input
-                type="radio"
-                :value="a.nameKo"
-                v-model="form.ability"
-                class="accent-blue-500"
-              />
-              <span class="text-sm font-medium">{{ a.nameKo }}</span>
-              <span v-if="a.isHidden" class="text-xs text-yellow-400 ml-auto">숨겨진 특성</span>
-            </label>
-          </div>
-          <!-- 데이터 로딩 전 폴백 -->
+          <select v-if="pokemonAbilities.length" v-model="form.ability" class="input-base">
+            <option value="">선택 안 함</option>
+            <option v-for="a in pokemonAbilities" :key="a.nameKo" :value="a.nameKo">
+              {{ a.nameKo }}{{ a.isHidden ? ' (숨겨진 특성)' : '' }}
+            </option>
+          </select>
           <input
             v-else
             v-model="form.ability"
