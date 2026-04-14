@@ -113,16 +113,32 @@
         </button>
       </form>
     </div>
+
+    <!-- Google AdSense -->
+    <div class="w-full max-w-sm mt-6">
+      <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-3610745423535391"
+        data-ad-slot="auto"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+onMounted(() => {
+  try {
+    (window.adsbygoogle = window.adsbygoogle || []).push({})
+  } catch {}
+})
 
 const mode = ref('login')
 const username = ref('')
