@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex flex-col items-center justify-center px-4 bg-surface-900">
+  <div class="min-h-screen flex items-center justify-center px-4 bg-surface-900">
     <div class="w-full max-w-sm">
       <!-- 로고 -->
       <div class="text-center mb-8">
@@ -112,16 +112,15 @@
           {{ loading ? '가입 중...' : '회원가입' }}
         </button>
       </form>
-    </div>
-
-    <!-- Google AdSense -->
-    <div class="w-full max-w-sm mt-6">
-      <ins class="adsbygoogle"
-        style="display:block"
-        data-ad-client="ca-pub-3610745423535391"
-        data-ad-slot="auto"
-        data-ad-format="auto"
-        data-full-width-responsive="true"></ins>
+      <!-- Google AdSense -->
+      <div class="mt-6">
+        <ins class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-3610745423535391"
+          data-ad-slot="auto"
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+      </div>
     </div>
   </div>
 </template>
