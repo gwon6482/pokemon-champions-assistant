@@ -197,11 +197,13 @@
           <button
             v-for="r in results"
             :key="r.value"
-            class="flex-1 py-2.5 rounded-lg font-semibold text-sm transition-colors"
+            class="flex-1 py-2.5 rounded-lg font-semibold text-sm transition-colors disabled:opacity-40"
             :class="r.class"
+            :disabled="saving"
             @click="saveResult(r.value)"
           >
-            {{ r.label }}
+            <span v-if="saving && savingResult === r.value">저장 중...</span>
+            <span v-else>{{ r.label }}</span>
           </button>
         </div>
         <textarea
@@ -218,9 +220,9 @@
     <Transition name="fade">
       <div
         v-if="savedToast"
-        class="fixed bottom-24 md:bottom-10 left-1/2 -translate-x-1/2 bg-green-700 text-white px-5 py-3 rounded-full text-sm font-medium shadow-lg"
+        class="fixed bottom-24 md:bottom-10 left-1/2 -translate-x-1/2 bg-green-700 text-white px-5 py-3 rounded-full text-sm font-medium shadow-lg z-50"
       >
-        전적이 저장되었습니다!
+        ✓ 기록 완료!
       </div>
     </Transition>
   </div>
@@ -242,6 +244,8 @@ const rosterStore = useRosterStore()
 
 const battleNote = ref('')
 const savedToast = ref(false)
+const saving = ref(false)
+const savingResult = ref('')
 const opponentCombo = ref([])
 
 const results = [
@@ -370,17 +374,25 @@ const matchupCellLabel = (mult) => {
 }
 
 const saveResult = async (result) => {
-  if (result === 'draw') {
-    // 무승부는 저장만
+  if (saving.value) return
+  saving.value = true
+  savingResult.value = result
+  try {
     await battleStore.saveRecord(result, battleNote.value)
-    savedToast.value = true
-    setTimeout(() => { savedToast.value = false }, 2500)
     battleNote.value = ''
-    return
+    savedToast.value = true
+    if (result === 'draw') {
+      setTimeout(() => { savedToast.value = false }, 2000)
+    } else {
+      battleStore.clearOpponents()
+      setTimeout(() => {
+        savedToast.value = false
+        router.push('/')
+      }, 1200)
+    }
+  } finally {
+    saving.value = false
+    savingResult.value = ''
   }
-  await battleStore.saveRecord(result, battleNote.value)
-  battleStore.clearOpponents()
-  battleNote.value = ''
-  router.push('/')
 }
 </script>

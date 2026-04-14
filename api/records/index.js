@@ -1,3 +1,4 @@
+import mongoose from 'mongoose'
 import { connectDB } from '../../lib/db.js'
 import { BattleRecord } from '../../lib/models.js'
 import { handleCors } from '../../lib/cors.js'
@@ -34,8 +35,9 @@ export default async function handler(req, res) {
       BattleRecord.countDocuments(filter)
     ])
 
+    const userObjectId = new mongoose.Types.ObjectId(decoded.userId)
     const stats = await BattleRecord.aggregate([
-      { $match: { userId: decoded.userId } },
+      { $match: { userId: userObjectId } },
       { $group: { _id: '$result', count: { $sum: 1 } } }
     ])
 

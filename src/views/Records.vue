@@ -22,10 +22,10 @@
         </div>
       </div>
 
-      <!-- 승률 바 -->
+      <!-- 승률 바 (최근 20전 기준) -->
       <div v-if="total > 0" class="card p-4">
         <div class="flex justify-between text-xs text-gray-400 mb-2">
-          <span>승률 {{ winRate }}%</span>
+          <span>승률 {{ winRate }}% <span class="text-gray-600">(최근 {{ recentTotal }}전)</span></span>
           <span>총 {{ total }}전</span>
         </div>
         <div class="flex rounded-full overflow-hidden h-2">
@@ -121,13 +121,17 @@ const page = ref(1)
 const totalPages = ref(1)
 const total = ref(0)
 
+// 승률은 현재 로드된 최근 20전 기준
+const recentTotal = computed(() => records.value.length)
 const winRate = computed(() => {
-  if (total.value === 0) return 0
-  return Math.round((stats.value.win / total.value) * 100)
+  if (recentTotal.value === 0) return 0
+  const wins = records.value.filter(r => r.result === 'win').length
+  return Math.round((wins / recentTotal.value) * 100)
 })
 const loseRate = computed(() => {
-  if (total.value === 0) return 0
-  return Math.round((stats.value.lose / total.value) * 100)
+  if (recentTotal.value === 0) return 0
+  const loses = records.value.filter(r => r.result === 'lose').length
+  return Math.round((loses / recentTotal.value) * 100)
 })
 
 const fetchRecords = async (p = 1) => {
