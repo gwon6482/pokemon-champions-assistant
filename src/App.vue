@@ -1,5 +1,6 @@
 <template>
   <div class="min-h-screen flex flex-col">
+    <Analytics />
     <NavBar />
     <main class="flex-1" :class="isLoginPage ? '' : 'pb-20 md:pb-6'">
       <RouterView v-slot="{ Component }">
@@ -14,6 +15,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { Analytics } from '@vercel/analytics/vue'
 import NavBar from '@/components/common/NavBar.vue'
 
 const route = useRoute()
