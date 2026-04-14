@@ -1,5 +1,5 @@
 <template>
-  <div class="min-h-screen flex items-center justify-center px-4 bg-surface-900">
+  <div class="min-h-screen flex flex-col items-center justify-center px-4 bg-surface-900">
     <div class="w-full max-w-sm">
       <!-- 로고 -->
       <div class="text-center mb-8">
