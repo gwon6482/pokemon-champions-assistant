@@ -387,7 +387,7 @@ const saveResult = async (result) => {
       battleStore.clearOpponents()
       setTimeout(() => {
         savedToast.value = false
-        router.push('/')
+        router.push('/records')
       }, 1200)
     }
   } finally {

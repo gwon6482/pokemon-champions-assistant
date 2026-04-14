@@ -77,14 +77,17 @@
 
             <span class="text-gray-600 text-sm font-bold shrink-0">VS</span>
 
-            <!-- 상대 파티 -->
+            <!-- 상대 파티 (출전 포켓몬 하이라이트) -->
             <div class="flex gap-1 flex-wrap flex-1 justify-end">
               <img
                 v-for="p in rec.opponentParty"
                 :key="p._id"
                 :src="p.imageUrl"
                 :title="p.name?.ko"
-                class="w-9 h-9 object-contain bg-surface-700 rounded-lg opacity-70"
+                class="w-9 h-9 object-contain rounded-lg transition-opacity"
+                :class="isInCombo(p, rec)
+                  ? 'bg-surface-600 ring-1 ring-blue-400'
+                  : 'bg-surface-700 opacity-30'"
               />
             </div>
           </div>
@@ -158,6 +161,9 @@ const fetchRecords = async (p = 1) => {
 const loadMore = () => fetchRecords(page.value + 1)
 
 onMounted(() => fetchRecords())
+
+const isInCombo = (pokemon, rec) =>
+  rec.opponentCombo?.some(c => c._id === pokemon._id) ?? false
 
 const resultLabel = (r) => ({ win: '승', lose: '패', draw: '무' })[r] ?? r
 const resultClass = (r) => ({
