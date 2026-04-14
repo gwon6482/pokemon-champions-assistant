@@ -1,8 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
+import { useAuthStore } from './auth.js'
 
 const API = import.meta.env.VITE_API_BASE || '/api'
+
+function authHeaders() {
+  const auth = useAuthStore()
+  return auth.token ? { Authorization: `Bearer ${auth.token}` } : {}
+}
 
 export const useBattleStore = defineStore('battle', () => {
   const mode = ref('single') // 'single' | 'double'
@@ -62,7 +68,7 @@ export const useBattleStore = defineStore('battle', () => {
       opponentCombo: opponentCombo.value.map(p => p._id),
       result,
       note
-    })
+    }, { headers: authHeaders() })
     return res.data
   }
 

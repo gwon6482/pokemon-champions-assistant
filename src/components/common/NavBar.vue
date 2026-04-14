@@ -67,9 +67,10 @@ const authStore = useAuthStore()
 const rosterStore = useRosterStore()
 
 const navItems = [
-  { to: '/',       label: '파티 구성', icon: '📋' },
-  { to: '/roster', label: '로스터',    icon: '📊' },
-  { to: '/battle', label: '배틀',      icon: '⚔️' }
+  { to: '/',        label: '파티 구성', icon: '📋' },
+  { to: '/roster',  label: '로스터',    icon: '📊' },
+  { to: '/battle',  label: '배틀',      icon: '⚔️' },
+  { to: '/records', label: '전적',      icon: '🏆' }
 ]
 
 const isActive = (path) => route.path === path

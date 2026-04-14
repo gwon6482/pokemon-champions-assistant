@@ -227,6 +227,7 @@
 
 <script setup>
 import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useBattleStore } from '@/stores/battle.js'
 import { useRosterStore } from '@/stores/roster.js'
 import { getMatchup } from '@/utils/typeChart.js'
@@ -234,6 +235,7 @@ import MatchupCard from '@/components/battle/MatchupCard.vue'
 import ActivePokemon from '@/components/battle/ActivePokemon.vue'
 import TypeBadge from '@/components/pokemon/TypeBadge.vue'
 
+const router = useRouter()
 const battleStore = useBattleStore()
 const rosterStore = useRosterStore()
 
@@ -367,9 +369,17 @@ const matchupCellLabel = (mult) => {
 }
 
 const saveResult = async (result) => {
+  if (result === 'draw') {
+    // 무승부는 저장만
+    await battleStore.saveRecord(result, battleNote.value)
+    savedToast.value = true
+    setTimeout(() => { savedToast.value = false }, 2500)
+    battleNote.value = ''
+    return
+  }
   await battleStore.saveRecord(result, battleNote.value)
-  savedToast.value = true
-  setTimeout(() => { savedToast.value = false }, 2500)
+  battleStore.clearOpponents()
   battleNote.value = ''
+  router.push('/')
 }
 </script>

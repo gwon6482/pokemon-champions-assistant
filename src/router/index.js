@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth.js'
 import PartyBuilder from '@/views/PartyBuilder.vue'
 import RosterSelect from '@/views/RosterSelect.vue'
 import Battle from '@/views/Battle.vue'
+import Records from '@/views/Records.vue'
 import Login from '@/views/Login.vue'
 
 const routes = [
@@ -29,6 +30,12 @@ const routes = [
     name: 'battle',
     component: Battle,
     meta: { title: '배틀', requiresAuth: true }
+  },
+  {
+    path: '/records',
+    name: 'records',
+    component: Records,
+    meta: { title: '전적', requiresAuth: true }
   }
 ]
 

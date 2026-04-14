@@ -1,9 +1,13 @@
 import { connectDB } from '../../lib/db.js'
 import { BattleRecord } from '../../lib/models.js'
 import { handleCors } from '../../lib/cors.js'
+import { verifyToken } from '../../lib/authMiddleware.js'
 
 export default async function handler(req, res) {
   if (handleCors(req, res)) return
+
+  const decoded = verifyToken(req, res)
+  if (!decoded) return
 
   await connectDB()
 
@@ -13,7 +17,7 @@ export default async function handler(req, res) {
 
   try {
     const { mode, result, page = 1, limit = 20 } = req.query
-    const filter = {}
+    const filter = { userId: decoded.userId }
 
     if (mode) filter.mode = mode
     if (result) filter.result = result
@@ -22,7 +26,7 @@ export default async function handler(req, res) {
 
     const [records, total] = await Promise.all([
       BattleRecord.find(filter)
-        .populate('myParty myCombo opponentParty opponentCombo', 'name types imageUrl nationalId')
+        .populate('myCombo opponentParty', 'name types imageUrl')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(Number(limit))
@@ -31,6 +35,7 @@ export default async function handler(req, res) {
     ])
 
     const stats = await BattleRecord.aggregate([
+      { $match: { userId: decoded.userId } },
       { $group: { _id: '$result', count: { $sum: 1 } } }
     ])
 

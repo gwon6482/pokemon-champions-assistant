@@ -1,6 +1,7 @@
 import { connectDB } from '../../lib/db.js'
 import { BattleRecord } from '../../lib/models.js'
 import { handleCors } from '../../lib/cors.js'
+import { verifyToken } from '../../lib/authMiddleware.js'
 
 export default async function handler(req, res) {
   if (handleCors(req, res)) return
@@ -8,6 +9,9 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: '허용되지 않는 메서드입니다.' })
   }
+
+  const decoded = verifyToken(req, res)
+  if (!decoded) return
 
   await connectDB()
 
@@ -19,6 +23,7 @@ export default async function handler(req, res) {
     }
 
     const record = await BattleRecord.create({
+      userId: decoded.userId,
       mode,
       myParty: myParty || [],
       myCombo: myCombo || [],
