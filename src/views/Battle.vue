@@ -25,12 +25,7 @@
           <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wide">
             상대 파티
           </h2>
-          <span class="text-xs text-gray-400">
-            출전 선택
-            <span :class="opponentCombo.length === battleStore.comboSize ? 'text-green-400 font-semibold' : 'text-blue-400'">
-              {{ opponentCombo.length }}/{{ battleStore.comboSize }}
-            </span>
-          </span>
+          <span class="text-xs text-gray-400">출전 포켓몬 선택</span>
         </div>
         <div class="space-y-2">
           <MatchupCard
@@ -91,30 +86,45 @@
       </section>
     </div>
 
-    <!-- 상대 조합 상성 분석표 -->
-    <section v-if="opponentCombo.length === battleStore.comboSize" class="animate-fade-in">
-      <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wide mb-3">상성 분석</h2>
+    <!-- 상성 분석표: 항상 표시 -->
+    <section v-if="battleStore.opponentParty.length && myComboDisplay.length" class="animate-fade-in">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wide">상성 분석</h2>
+        <span class="text-xs text-gray-500">
+          상대 출전 포켓몬
+          <span :class="opponentCombo.length === battleStore.comboSize ? 'text-green-400 font-semibold' : 'text-blue-400'">
+            {{ opponentCombo.length }}/{{ battleStore.comboSize }}
+          </span>
+          선택됨
+        </span>
+      </div>
       <div class="card overflow-x-auto">
         <table class="w-full text-sm">
-          <!-- 헤더: 상대 포켓몬 -->
+          <!-- 헤더: 상대 포켓몬 전원 -->
           <thead>
             <tr class="border-b border-surface-700">
               <th class="p-3 text-left text-gray-500 font-normal w-24">내 포켓몬</th>
               <th
-                v-for="opp in opponentCombo"
+                v-for="opp in battleStore.opponentParty"
                 :key="opp._id"
-                class="p-2 text-center"
+                class="p-2 text-center transition-opacity duration-200"
+                :class="columnHeaderClass(opp)"
               >
                 <div class="flex flex-col items-center gap-1">
                   <img
                     v-if="opp.imageUrl"
                     :src="opp.imageUrl"
                     class="w-9 h-9 object-contain mx-auto"
+                    :class="isOpponentDisabled(opp) ? 'opacity-30' : ''"
                   />
-                  <span class="text-xs text-gray-300 leading-tight">{{ opp.name?.ko }}</span>
-                  <div class="flex gap-0.5 justify-center flex-wrap">
+                  <span class="text-xs leading-tight" :class="isOpponentSelected(opp) ? 'text-white font-semibold' : 'text-gray-400'">
+                    {{ opp.name?.ko }}
+                  </span>
+                  <div class="flex gap-0.5 justify-center flex-wrap" :class="isOpponentDisabled(opp) ? 'opacity-30' : ''">
                     <TypeBadge v-for="t in opp.types" :key="t" :type="t" />
                   </div>
+                  <!-- 선택 표시 -->
+                  <span v-if="isOpponentSelected(opp)" class="text-green-400 text-xs font-bold">✓ 출전</span>
                 </div>
               </th>
             </tr>
@@ -139,9 +149,10 @@
                 </div>
               </td>
               <td
-                v-for="opp in opponentCombo"
+                v-for="opp in battleStore.opponentParty"
                 :key="opp._id"
-                class="p-2 text-center"
+                class="p-2 text-center transition-opacity duration-200"
+                :class="isOpponentDisabled(opp) ? 'opacity-20' : isOpponentSelected(opp) ? 'bg-blue-900/10' : ''"
               >
                 <span
                   class="inline-block px-2 py-0.5 rounded text-xs font-bold"
@@ -266,6 +277,12 @@ const counterList = computed(() => {
     })
     .sort((a, b) => b.matchup - a.matchup)
 })
+
+const columnHeaderClass = (opp) => {
+  if (isOpponentSelected(opp)) return 'ring-1 ring-blue-500/50 bg-blue-900/10'
+  if (isOpponentDisabled(opp)) return 'opacity-25'
+  return ''
+}
 
 const matchupCellClass = (mult) => {
   if (mult >= 4)   return 'bg-green-500/30 text-green-300'
