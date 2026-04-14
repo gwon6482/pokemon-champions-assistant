@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen flex flex-col">
     <NavBar />
-    <main class="flex-1 pb-20 md:pb-6">
+    <main class="flex-1" :class="isLoginPage ? '' : 'pb-20 md:pb-6'">
       <RouterView v-slot="{ Component }">
         <Transition name="fade" mode="out-in">
           <component :is="Component" />
@@ -12,7 +12,12 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import NavBar from '@/components/common/NavBar.vue'
+
+const route = useRoute()
+const isLoginPage = computed(() => route.name === 'login')
 </script>
 
 <style>

@@ -41,8 +41,20 @@ pokemonSchema.index({ 'name.ko': 'text', 'name.en': 'text' })
 pokemonSchema.index({ types: 1 })
 pokemonSchema.index({ availableInChampions: 1 })
 
+// ─── User ────────────────────────────────────────────────────────────────────
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    match: /^[a-zA-Z0-9]{1,8}$/
+  },
+  password: { type: String, required: true } // bcrypt hash
+}, { timestamps: true })
+
 // ─── MyRoster ───────────────────────────────────────────────────────────────
 const rosterSchema = new mongoose.Schema({
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
   slotIndex: { type: Number, required: true, min: 0, max: 5 },
   pokemonId: { type: mongoose.Schema.Types.ObjectId, ref: 'Pokemon', required: true },
   nickname: { type: String, default: '' },
@@ -72,5 +84,6 @@ const battleRecordSchema = new mongoose.Schema({
 }, { timestamps: true })
 
 export const Pokemon = mongoose.models.Pokemon || mongoose.model('Pokemon', pokemonSchema)
+export const User = mongoose.models.User || mongoose.model('User', userSchema)
 export const MyRoster = mongoose.models.MyRoster || mongoose.model('MyRoster', rosterSchema)
 export const BattleRecord = mongoose.models.BattleRecord || mongoose.model('BattleRecord', battleRecordSchema)

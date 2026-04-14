@@ -1,5 +1,5 @@
 <template>
-  <nav class="bg-surface-800 border-b border-surface-700 sticky top-0 z-40">
+  <nav v-if="authStore.isLoggedIn" class="bg-surface-800 border-b border-surface-700 sticky top-0 z-40">
     <div class="max-w-5xl mx-auto px-4 flex items-center justify-between h-14">
       <RouterLink to="/" class="flex items-center gap-2 font-bold text-lg text-white">
         <span class="text-2xl">&#x26BE;</span>
@@ -19,6 +19,24 @@
         >
           {{ item.label }}
         </RouterLink>
+
+        <!-- 유저 정보 + 로그아웃 -->
+        <div class="flex items-center gap-2 ml-2 pl-2 border-l border-surface-600">
+          <span class="text-sm text-gray-300 font-medium">{{ authStore.username }}</span>
+          <button
+            @click="handleLogout"
+            class="px-3 py-1.5 rounded-lg text-xs text-gray-400 hover:text-white hover:bg-surface-700 transition-colors"
+          >로그아웃</button>
+        </div>
+      </div>
+
+      <!-- 모바일 유저 + 로그아웃 -->
+      <div class="md:hidden flex items-center gap-2">
+        <span class="text-xs text-gray-400">{{ authStore.username }}</span>
+        <button
+          @click="handleLogout"
+          class="text-xs text-gray-500 hover:text-white transition-colors px-2 py-1"
+        >로그아웃</button>
       </div>
     </div>
 
@@ -39,9 +57,14 @@
 </template>
 
 <script setup>
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth.js'
+import { useRosterStore } from '@/stores/roster.js'
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+const rosterStore = useRosterStore()
 
 const navItems = [
   { to: '/',       label: '파티 구성', icon: '📋' },
@@ -50,4 +73,10 @@ const navItems = [
 ]
 
 const isActive = (path) => route.path === path
+
+function handleLogout() {
+  authStore.logout()
+  rosterStore.reset()
+  router.push('/login')
+}
 </script>

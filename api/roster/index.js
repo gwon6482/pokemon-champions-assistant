@@ -1,15 +1,21 @@
 import { connectDB } from '../lib/db.js'
 import { MyRoster } from '../lib/models.js'
 import { handleCors } from '../lib/cors.js'
+import { verifyToken } from '../lib/authMiddleware.js'
 
 export default async function handler(req, res) {
   if (handleCors(req, res)) return
 
+  const decoded = verifyToken(req, res)
+  if (!decoded) return
+
   await connectDB()
+
+  const userId = decoded.userId
 
   try {
     if (req.method === 'GET') {
-      const roster = await MyRoster.find()
+      const roster = await MyRoster.find({ userId })
         .populate('pokemonId')
         .sort({ slotIndex: 1 })
         .lean()
@@ -24,12 +30,13 @@ export default async function handler(req, res) {
       }
 
       // 같은 슬롯이 있으면 교체
-      const existing = await MyRoster.findOne({ slotIndex })
+      const existing = await MyRoster.findOne({ userId, slotIndex })
       if (existing) {
-        await MyRoster.deleteOne({ slotIndex })
+        await MyRoster.deleteOne({ userId, slotIndex })
       }
 
       const slot = await MyRoster.create({
+        userId,
         slotIndex,
         pokemonId,
         nickname: nickname || '',
@@ -46,7 +53,7 @@ export default async function handler(req, res) {
 
     // DELETE ALL (파티 초기화)
     if (req.method === 'DELETE') {
-      await MyRoster.deleteMany({})
+      await MyRoster.deleteMany({ userId })
       return res.status(200).json({ message: '파티가 초기화되었습니다.' })
     }
 
