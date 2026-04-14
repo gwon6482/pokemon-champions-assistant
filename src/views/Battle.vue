@@ -103,21 +103,21 @@
           <!-- 헤더: 상대 포켓몬 전원 -->
           <thead>
             <tr class="border-b border-surface-700">
-              <th class="p-3 text-left text-gray-500 font-normal w-24">내 포켓몬</th>
+              <th class="p-1 md:p-3 text-left text-gray-500 font-normal w-16 md:w-24 text-[10px] md:text-xs">내 포켓몬</th>
               <th
                 v-for="opp in battleStore.opponentParty"
                 :key="opp._id"
-                class="p-2 text-center transition-opacity duration-200"
+                class="p-1 md:p-2 text-center transition-opacity duration-200"
                 :class="columnHeaderClass(opp)"
               >
                 <div class="flex flex-col items-center gap-1">
                   <img
                     v-if="opp.imageUrl"
                     :src="opp.imageUrl"
-                    class="w-9 h-9 object-contain mx-auto"
+                    class="w-6 h-6 md:w-9 md:h-9 object-contain mx-auto"
                     :class="isOpponentDisabled(opp) ? 'opacity-30' : ''"
                   />
-                  <span class="text-xs leading-tight" :class="isOpponentSelected(opp) ? 'text-white font-semibold' : 'text-gray-400'">
+                  <span class="text-[9px] md:text-xs leading-tight" :class="isOpponentSelected(opp) ? 'text-white font-semibold' : 'text-gray-400'">
                     {{ opp.name?.ko }}
                   </span>
                   <div class="flex gap-0.5 justify-center flex-wrap" :class="isOpponentDisabled(opp) ? 'opacity-30' : ''">
@@ -125,11 +125,11 @@
                   </div>
                   <!-- 역할 배지 -->
                   <span
-                    class="text-xs px-1.5 py-0.5 rounded font-medium"
+                    class="text-[9px] md:text-xs px-1 md:px-1.5 py-0 md:py-0.5 rounded font-medium"
                     :class="[roleBadgeClass(getOppRole(opp)), isOpponentDisabled(opp) ? 'opacity-30' : '']"
                   >{{ getOppRole(opp) }}</span>
                   <!-- 선택 표시 -->
-                  <span v-if="isOpponentSelected(opp)" class="text-green-400 text-xs font-bold">✓ 출전</span>
+                  <span v-if="isOpponentSelected(opp)" class="text-green-400 text-[9px] md:text-xs font-bold">✓ 출전</span>
                 </div>
               </th>
             </tr>
@@ -141,18 +141,18 @@
               :key="slot._id || slot.pokemonId?._id"
               class="border-b border-surface-800 last:border-0"
             >
-              <td class="p-3">
-                <div class="flex items-center gap-2">
+              <td class="p-1 md:p-3">
+                <div class="flex items-center gap-1 md:gap-2">
                   <img
                     v-if="(slot.pokemonId || slot).imageUrl"
                     :src="(slot.pokemonId || slot).imageUrl"
-                    class="w-7 h-7 object-contain flex-shrink-0"
+                    class="w-5 h-5 md:w-7 md:h-7 object-contain flex-shrink-0"
                   />
                   <div class="flex flex-col gap-0.5">
-                    <span class="text-xs text-gray-300 leading-tight">
+                    <span class="text-[9px] md:text-xs text-gray-300 leading-tight">
                       {{ slot.nickname || (slot.pokemonId || slot).name?.ko }}
                     </span>
-                    <span class="text-xs px-1.5 py-0.5 rounded font-medium self-start" :class="roleBadgeClass(getMySlotRole(slot))">
+                    <span class="text-[9px] md:text-xs px-1 md:px-1.5 py-0 md:py-0.5 rounded font-medium self-start" :class="roleBadgeClass(getMySlotRole(slot))">
                       {{ getMySlotRole(slot) }}
                     </span>
                   </div>
@@ -161,13 +161,13 @@
               <td
                 v-for="opp in battleStore.opponentParty"
                 :key="opp._id"
-                class="p-2 text-center transition-opacity duration-200"
+                class="p-1 md:p-2 text-center transition-opacity duration-200"
                 :class="isOpponentDisabled(opp) ? 'opacity-20' : isOpponentSelected(opp) ? 'bg-blue-900/10' : ''"
               >
                 <div class="flex flex-col items-center gap-0.5">
                   <!-- 공격상성: 내가 상대를 때릴 때 -->
                   <span
-                    class="inline-block px-1.5 py-0.5 rounded text-xs font-bold leading-tight"
+                    class="inline-block px-0.5 md:px-1.5 py-0 md:py-0.5 rounded text-[9px] md:text-xs font-bold leading-tight"
                     :class="matchupCellClass(getMatchup((slot.pokemonId || slot).types || [], opp.types || []))"
                     title="공격"
                   >
@@ -175,7 +175,7 @@
                   </span>
                   <!-- 방어상성: 상대가 나를 때릴 때 -->
                   <span
-                    class="inline-block px-1.5 py-0.5 rounded text-xs font-bold leading-tight"
+                    class="inline-block px-0.5 md:px-1.5 py-0 md:py-0.5 rounded text-[9px] md:text-xs font-bold leading-tight"
                     :class="matchupCellClassDef(getMatchup(opp.types || [], (slot.pokemonId || slot).types || []))"
                     title="방어"
                   >
