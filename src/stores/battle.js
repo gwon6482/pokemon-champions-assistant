@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import axios from 'axios'
 import { useAuthStore } from './auth.js'
+import { useRosterStore } from './roster.js'
 
 const API = import.meta.env.VITE_API_BASE || '/api'
 
@@ -60,9 +61,11 @@ export const useBattleStore = defineStore('battle', () => {
   }
 
   const saveRecord = async (result, note = '') => {
+    const rosterStore = useRosterStore()
+    const myPartyIds = rosterStore.filledSlots.map(s => s.pokemonId?._id || s.pokemonId)
     const res = await axios.post(`${API}/battle/record`, {
       mode: mode.value,
-      myParty: [],
+      myParty: myPartyIds,
       myCombo: myCombo.value.map(p => p._id),
       opponentParty: opponentParty.value.map(p => p._id),
       opponentCombo: opponentCombo.value.map(p => p._id),
