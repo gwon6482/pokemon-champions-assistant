@@ -44,9 +44,9 @@ import { useRoute } from 'vue-router'
 const route = useRoute()
 
 const navItems = [
-  { to: '/',       label: '파티 구성', icon: '&#x1F4CB;' },
-  { to: '/roster', label: '로스터',    icon: '&#x1F4CA;' },
-  { to: '/battle', label: '배틀',      icon: '&#x2694;&#xFE0F;' }
+  { to: '/',       label: '파티 구성', icon: '📋' },
+  { to: '/roster', label: '로스터',    icon: '📊' },
+  { to: '/battle', label: '배틀',      icon: '⚔️' }
 ]
 
 const isActive = (path) => route.path === path
