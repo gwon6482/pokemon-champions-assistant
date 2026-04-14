@@ -154,12 +154,24 @@
                 class="p-2 text-center transition-opacity duration-200"
                 :class="isOpponentDisabled(opp) ? 'opacity-20' : isOpponentSelected(opp) ? 'bg-blue-900/10' : ''"
               >
-                <span
-                  class="inline-block px-2 py-0.5 rounded text-xs font-bold"
-                  :class="matchupCellClass(getMatchup((slot.pokemonId || slot).types || [], opp.types || []))"
-                >
-                  {{ matchupCellLabel(getMatchup((slot.pokemonId || slot).types || [], opp.types || [])) }}
-                </span>
+                <div class="flex flex-col items-center gap-0.5">
+                  <!-- 공격상성: 내가 상대를 때릴 때 -->
+                  <span
+                    class="inline-block px-1.5 py-0.5 rounded text-xs font-bold leading-tight"
+                    :class="matchupCellClass(getMatchup((slot.pokemonId || slot).types || [], opp.types || []))"
+                    title="공격"
+                  >
+                    ↑{{ matchupCellLabel(getMatchup((slot.pokemonId || slot).types || [], opp.types || [])) }}
+                  </span>
+                  <!-- 방어상성: 상대가 나를 때릴 때 -->
+                  <span
+                    class="inline-block px-1.5 py-0.5 rounded text-xs font-bold leading-tight"
+                    :class="matchupCellClassDef(getMatchup(opp.types || [], (slot.pokemonId || slot).types || []))"
+                    title="방어"
+                  >
+                    ↓{{ matchupCellLabel(getMatchup(opp.types || [], (slot.pokemonId || slot).types || [])) }}
+                  </span>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -290,6 +302,15 @@ const matchupCellClass = (mult) => {
   if (mult === 0)  return 'bg-surface-700 text-gray-600'
   if (mult < 1)    return 'bg-red-900/30 text-red-400'
   return 'text-gray-500'
+}
+
+// 방어상성: 상대가 나를 때리는 배수 → 높을수록 불리
+const matchupCellClassDef = (mult) => {
+  if (mult >= 4)   return 'bg-red-500/30 text-red-300'
+  if (mult >= 2)   return 'bg-red-900/40 text-red-400'
+  if (mult === 0)  return 'bg-surface-700 text-gray-600'
+  if (mult < 1)    return 'bg-green-900/30 text-green-400'
+  return 'text-gray-600'
 }
 
 const matchupCellLabel = (mult) => {

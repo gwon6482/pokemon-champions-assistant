@@ -270,6 +270,8 @@ const onOpponentSelect = (pokemon) => {
     battleStore.removeOpponent(pokemon._id)
   } else {
     battleStore.addOpponent(pokemon)
+    pokemonStore.searchQuery = ''
+    pokemonStore.selectedTypes = []
   }
 }
 
