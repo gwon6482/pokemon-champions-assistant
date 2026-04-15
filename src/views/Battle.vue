@@ -234,6 +234,7 @@ import { useRouter } from 'vue-router'
 import { useBattleStore } from '@/stores/battle.js'
 import { useRosterStore } from '@/stores/roster.js'
 import { getMatchup } from '@/utils/typeChart.js'
+import { effectiveStats } from '@/utils/recommend.js'
 import MatchupCard from '@/components/battle/MatchupCard.vue'
 import ActivePokemon from '@/components/battle/ActivePokemon.vue'
 import TypeBadge from '@/components/pokemon/TypeBadge.vue'
@@ -330,10 +331,10 @@ const matchupCellClassDef = (mult) => {
   return 'text-gray-600'
 }
 
-// 역할 판단: 내 포켓몬(로스터 슬롯) - 기술 구성 우선, 없으면 기본 스탯
+// 역할 판단: 내 포켓몬(로스터 슬롯) - 기술 구성 우선, 없으면 노력치+성격 반영 실질 스탯
 const getMySlotRole = (slot) => {
   const pokemon = slot.pokemonId || slot
-  const b = pokemon.baseStats || {}
+  const s = effectiveStats(slot)
   const moveData = (slot.moves || []).filter(Boolean)
     .map(n => (pokemon.moves || []).find(m => m.nameKo === n))
     .filter(Boolean)
@@ -341,9 +342,9 @@ const getMySlotRole = (slot) => {
   const hasSpec = moveData.some(m => m.damageClass === 'special')
   if (hasPhys && !hasSpec) return '물리'
   if (!hasPhys && hasSpec) return '특수'
-  if (b.hp + b.defense + b.spDef > 310 && b.attack < 100 && b.spAtk < 100) return '탱커'
-  if (b.attack > (b.spAtk || 0) + 25) return '물리'
-  if ((b.spAtk || 0) > b.attack + 25) return '특수'
+  if (s.hp + s.defense + s.spDef > 310 && s.attack < 100 && s.spAtk < 100) return '탱커'
+  if (s.attack > (s.spAtk || 0) + 25) return '물리'
+  if ((s.spAtk || 0) > s.attack + 25) return '특수'
   return '균형'
 }
 

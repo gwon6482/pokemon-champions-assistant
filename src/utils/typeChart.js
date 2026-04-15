@@ -79,15 +79,19 @@ export function getTypeEffectiveness(attackType, defenseType) {
 
 /**
  * 공격자 타입 배열 vs 방어자 타입 배열의 최종 배수
+ * - 방어: 타입별 배수를 모두 곱함 (dual type 방어 공식)
+ * - 공격: 사용할 기술 타입을 선택할 수 있으므로 최댓값 반환
  */
 export function getMatchup(attackerTypes, defenderTypes) {
-  let multiplier = 1
+  let best = 0
   for (const atk of attackerTypes) {
+    let multiplier = 1
     for (const def of defenderTypes) {
       multiplier *= getTypeEffectiveness(atk, def)
     }
+    if (multiplier > best) best = multiplier
   }
-  return multiplier
+  return best
 }
 
 /**

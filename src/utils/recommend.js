@@ -59,7 +59,7 @@ const ABILITY_DEFENSE = {
 // ─── 실질 스탯 계산 (노력치 + 성격 반영) ──────────────────────
 // 포켓몬 챔피언스 EV 시스템: max 32/스탯, total 66
 // 1 EV ≈ 2스탯 증가 (근사치)
-function effectiveStats(slot) {
+export function effectiveStats(slot) {
   const base = slot.pokemonId?.baseStats || slot.baseStats || {}
   const ev   = slot.evTraining || {}
   const nat  = NATURE_MAP[slot.nature] || null
