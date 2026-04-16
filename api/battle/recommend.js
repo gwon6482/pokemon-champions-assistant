@@ -36,6 +36,7 @@ export default async function handler(req, res) {
     const systemPrompt = `당신은 포켓몬 챔피언스 배틀 전문가입니다.
 내 파티와 상대 파티 정보를 분석하여 최적의 조합을 추천합니다.
 타입 상성, 스피드 서열, 역할 분담을 종합적으로 고려해주세요.
+중요 규칙: 메가진화는 배틀당 1번만 사용 가능합니다. 추천하는 각 조합에 이름이 "메가"로 시작하는 포켓몬이 2마리 이상 포함되어서는 안 됩니다.
 응답은 반드시 JSON 형식으로만 반환하고, 다른 텍스트는 포함하지 마세요.`
 
     const comboSize = mode === 'double' ? 4 : 3
@@ -80,10 +81,12 @@ ${opponentPokemons.map((p, i) => `${i + 1}. ${p.name.ko} [${p.types.join('/')}] 
     const nameToId = {}
     myPokemons.forEach(p => { nameToId[p.name.ko] = String(p._id) })
 
-    const recommendations = aiResult.recommendations.map(rec => ({
-      ...rec,
-      comboIds: rec.combo.map(name => nameToId[name]).filter(Boolean)
-    }))
+    const recommendations = aiResult.recommendations
+      .filter(rec => rec.combo.filter(name => name.startsWith('메가')).length <= 1)
+      .map(rec => ({
+        ...rec,
+        comboIds: rec.combo.map(name => nameToId[name]).filter(Boolean)
+      }))
 
     return res.status(200).json({
       mode,

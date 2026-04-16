@@ -251,7 +251,14 @@ export function recommendCombos(myParty, opponentParty, mode = 'single', topN = 
   const filledSlots = myParty.filter(Boolean)
   if (filledSlots.length < comboSize) return []
 
+  const isMega = slot => {
+    const nameKo = slot.pokemonId?.name?.ko || slot.name?.ko || ''
+    const nameEn = slot.pokemonId?.name?.en || slot.name?.en || ''
+    return nameKo.startsWith('메가') || nameEn.startsWith('Mega')
+  }
+
   const combos = getCombinations(filledSlots, comboSize)
+    .filter(combo => combo.filter(isMega).length <= 1)
   const scored = combos
     .map(combo => ({ combo, score: scoreCombo(combo, opponentParty) }))
     .sort((a, b) => b.score - a.score)
