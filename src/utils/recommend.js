@@ -252,9 +252,8 @@ export function recommendCombos(myParty, opponentParty, mode = 'single', topN = 
   if (filledSlots.length < comboSize) return []
 
   const isMega = slot => {
-    const nameKo = slot.pokemonId?.name?.ko || slot.name?.ko || ''
     const nameEn = slot.pokemonId?.name?.en || slot.name?.en || ''
-    return nameKo.startsWith('메가') || nameEn.startsWith('Mega')
+    return nameEn.startsWith('Mega ')
   }
 
   const combos = getCombinations(filledSlots, comboSize)
