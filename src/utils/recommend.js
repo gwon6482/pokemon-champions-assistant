@@ -251,9 +251,10 @@ export function recommendCombos(myParty, opponentParty, mode = 'single', topN = 
   const filledSlots = myParty.filter(Boolean)
   if (filledSlots.length < comboSize) return []
 
+  const MEGA_EXCEPTIONS = new Set(['메가니움'])
   const isMega = slot => {
-    const nameEn = slot.pokemonId?.name?.en || slot.name?.en || ''
-    return nameEn.startsWith('Mega ')
+    const nameKo = slot.pokemonId?.name?.ko || slot.name?.ko || ''
+    return nameKo.startsWith('메가') && !MEGA_EXCEPTIONS.has(nameKo)
   }
 
   const combos = getCombinations(filledSlots, comboSize)

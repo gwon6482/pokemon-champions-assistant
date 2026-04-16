@@ -77,16 +77,15 @@ ${opponentPokemons.map((p, i) => `${i + 1}. ${p.name.ko} [${p.types.join('/')}] 
 
     const aiResult = JSON.parse(jsonMatch[0])
 
-    // 포켓몬 이름 → ID 매핑 및 메가진화 여부 판별 (영어 이름 "Mega " 기준)
+    // 포켓몬 이름 → ID 매핑
     const nameToId = {}
-    const megaNames = new Set()
-    myPokemons.forEach(p => {
-      nameToId[p.name.ko] = String(p._id)
-      if (p.name.en?.startsWith('Mega ')) megaNames.add(p.name.ko)
-    })
+    myPokemons.forEach(p => { nameToId[p.name.ko] = String(p._id) })
+
+    const MEGA_EXCEPTIONS = new Set(['메가니움'])
+    const isMegaName = name => name.startsWith('메가') && !MEGA_EXCEPTIONS.has(name)
 
     const recommendations = aiResult.recommendations
-      .filter(rec => rec.combo.filter(name => megaNames.has(name)).length <= 1)
+      .filter(rec => rec.combo.filter(isMegaName).length <= 1)
       .map(rec => ({
         ...rec,
         comboIds: rec.combo.map(name => nameToId[name]).filter(Boolean)
