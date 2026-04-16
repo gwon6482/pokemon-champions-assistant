@@ -331,7 +331,7 @@ const toggleMyComboSlot = (slot) => {
 
 const confirmMyCombo = () => {
   if (myComboSelection.value.length < battleStore.comboSize) return
-  battleStore.myCombo = myComboSelection.value.map(s => s.pokemonId || s)
+  battleStore.myCombo = myComboSelection.value
   showMyComboModal.value = false
   router.push('/battle')
 }
@@ -374,6 +374,6 @@ const getRecommendations = () => {
 }
 
 const selectCombo = (rec) => {
-  battleStore.myCombo = rec.combo.map(s => s.pokemonId || s)
+  battleStore.myCombo = rec.combo
 }
 </script>

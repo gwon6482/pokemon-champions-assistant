@@ -66,7 +66,7 @@ export const useBattleStore = defineStore('battle', () => {
     const res = await axios.post(`${API}/battle/record`, {
       mode: mode.value,
       myParty: myPartyIds,
-      myCombo: myCombo.value.map(p => p._id),
+      myCombo: myCombo.value.map(p => p.pokemonId?._id || p._id),
       opponentParty: opponentParty.value.map(p => p._id),
       opponentCombo: opponentCombo.value.map(p => p._id),
       result,
