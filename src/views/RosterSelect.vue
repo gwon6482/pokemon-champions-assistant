@@ -356,15 +356,15 @@ const getRecommendations = () => {
   try {
     const slots = [...rosterStore.filledSlots]
     const opponents = [...battleStore.opponentParty]
-    console.log('[추천] 내 파티:', slots.length, '/ 상대:', opponents.length, '/ 모드:', battleStore.mode)
-    const result = recommendCombos(slots, opponents, battleStore.mode, 5)
-    console.log('[추천] 결과:', result.length, '개')
+    const all = recommendCombos(slots, opponents, battleStore.mode, 20)
+    const result = rosterStore.aceSlotId
+      ? all.filter(r => r.combo.some(s => s._id === rosterStore.aceSlotId)).slice(0, 5)
+      : all.slice(0, 5)
     recommendations.value = result
     if (!result.length) {
       recommendError.value = '조합을 생성할 수 없습니다. 파티 슬롯을 확인해주세요.'
     }
   } catch (e) {
-    console.error('[추천 오류]', e)
     recommendError.value = `오류가 발생했습니다: ${e.message}`
   }
 }

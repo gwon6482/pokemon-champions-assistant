@@ -47,19 +47,19 @@
           <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wide">에이스</h2>
           <p class="text-xs text-gray-500 mt-0.5">조합에 반드시 포함할 포켓몬 1마리를 선택하세요</p>
         </div>
-        <button v-if="aceSlotId" @click="aceSlotId = null" class="text-xs text-gray-500 hover:text-red-400 transition-colors">해제</button>
+        <button v-if="rosterStore.aceSlotId" @click="rosterStore.aceSlotId = null" class="text-xs text-gray-500 hover:text-red-400 transition-colors">해제</button>
       </div>
       <div class="grid grid-cols-3 sm:grid-cols-6 gap-2">
         <button
           v-for="slot in rosterStore.filledSlots"
           :key="slot._id"
           class="relative flex flex-col items-center gap-1.5 p-2 rounded-xl border-2 transition-all"
-          :class="aceSlotId === slot._id
+          :class="rosterStore.aceSlotId === slot._id
             ? 'border-yellow-400 bg-yellow-900/20'
             : 'border-surface-600 bg-surface-800 hover:border-yellow-600/50'"
           @click="toggleAce(slot._id)"
         >
-          <span v-if="aceSlotId === slot._id" class="absolute -top-2 left-1/2 -translate-x-1/2 text-sm leading-none">⭐</span>
+          <span v-if="rosterStore.aceSlotId === slot._id" class="absolute -top-2 left-1/2 -translate-x-1/2 text-sm leading-none">⭐</span>
           <img v-if="slot.pokemonId?.imageUrl" :src="slot.pokemonId.imageUrl" class="w-10 h-10 object-contain" />
           <p class="text-xs text-center text-gray-300 truncate w-full leading-tight">
             {{ slot.nickname || slot.pokemonId?.name?.ko }}
@@ -164,7 +164,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted, nextTick, watch } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { usePokemonStore } from '@/stores/pokemon.js'
 import { useRosterStore } from '@/stores/roster.js'
 import { useAuthStore } from '@/stores/auth.js'
@@ -184,7 +184,6 @@ const battleMode = ref('single')
 const showSlotPicker = ref(false)
 const editingSlot = ref(null)
 const pendingPokemon = ref(null)
-const aceSlotId = ref(null)
 
 const selectedIds = computed(() =>
   rosterStore.slots.filter(Boolean).map(s => s.pokemonId?._id || s.pokemonId)
@@ -192,21 +191,14 @@ const selectedIds = computed(() =>
 
 const combos = computed(() => {
   const all = recommendCombos(rosterStore.slots, [], battleMode.value, 20)
-  if (!aceSlotId.value) return all
-  return all.filter(r => r.combo.some(s => s._id === aceSlotId.value))
+  if (!rosterStore.aceSlotId) return all
+  return all.filter(r => r.combo.some(s => s._id === rosterStore.aceSlotId))
 })
 const topCombos = computed(() => combos.value.slice(0, 5))
 
 const toggleAce = (slotId) => {
-  aceSlotId.value = aceSlotId.value === slotId ? null : slotId
+  rosterStore.aceSlotId = rosterStore.aceSlotId === slotId ? null : slotId
 }
-
-// 파티에서 에이스가 제거되면 자동 해제
-watch(() => rosterStore.filledSlots, (slots) => {
-  if (aceSlotId.value && !slots.some(s => s._id === aceSlotId.value)) {
-    aceSlotId.value = null
-  }
-}, { deep: true })
 
 onMounted(async () => {
   pokemonStore.fetchPokemons()

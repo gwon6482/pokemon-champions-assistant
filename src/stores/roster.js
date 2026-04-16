@@ -16,6 +16,7 @@ export const useRosterStore = defineStore('roster', () => {
   const slots = ref(Array(6).fill(null))
   const loading = ref(false)
   const error = ref(null)
+  const aceSlotId = ref(null)
 
   const filledSlots = computed(() => slots.value.filter(Boolean))
   const isFull = computed(() => filledSlots.value.length >= 6)
@@ -98,6 +99,7 @@ export const useRosterStore = defineStore('roster', () => {
 
   // --- removeSlot ---
   const removeSlot = async (id) => {
+    if (aceSlotId.value === id) aceSlotId.value = null
     const auth = useAuthStore()
     if (!auth.isLoggedIn) {
       const idx = slots.value.findIndex(s => s?._id === id)
@@ -114,6 +116,7 @@ export const useRosterStore = defineStore('roster', () => {
 
   // --- clearRoster ---
   const clearRoster = async () => {
+    aceSlotId.value = null
     const auth = useAuthStore()
     if (!auth.isLoggedIn) {
       slots.value = Array(6).fill(null)
@@ -127,6 +130,7 @@ export const useRosterStore = defineStore('roster', () => {
   // --- reset (로그아웃 시) ---
   const reset = () => {
     slots.value = Array(6).fill(null)
+    aceSlotId.value = null
   }
 
   const getPokemonAtSlot = (index) => slots.value[index]
@@ -181,7 +185,7 @@ export const useRosterStore = defineStore('roster', () => {
   }
 
   return {
-    slots, loading, error,
+    slots, loading, error, aceSlotId,
     filledSlots, isFull, isEmpty,
     fetchRoster, addToSlot, updateSlot, removeSlot, clearRoster, reset,
     getPokemonAtSlot, migrateFromLocal
