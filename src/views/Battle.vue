@@ -189,30 +189,51 @@
       </div>
     </section>
 
+    <!-- Google AdSense -->
+    <div>
+      <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-3610745423535391"
+        data-ad-slot="auto"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+    </div>
+
     <!-- 배틀 종료 -->
     <section v-if="battleStore.myCombo.length || battleStore.opponentParty.length">
       <div class="card p-4">
         <h3 class="font-semibold text-white mb-3">배틀 결과 기록</h3>
-        <div class="flex gap-3">
-          <button
-            v-for="r in results"
-            :key="r.value"
-            class="flex-1 py-2.5 rounded-lg font-semibold text-sm transition-colors disabled:opacity-40"
-            :class="r.class"
-            :disabled="saving"
-            @click="saveResult(r.value)"
-          >
-            <span v-if="saving && savingResult === r.value">저장 중...</span>
-            <span v-else>{{ r.label }}</span>
-          </button>
+
+        <!-- 로그인 상태: 결과 저장 버튼 -->
+        <template v-if="authStore.isLoggedIn">
+          <div class="flex gap-3">
+            <button
+              v-for="r in results"
+              :key="r.value"
+              class="flex-1 py-2.5 rounded-lg font-semibold text-sm transition-colors disabled:opacity-40"
+              :class="r.class"
+              :disabled="saving"
+              @click="saveResult(r.value)"
+            >
+              <span v-if="saving && savingResult === r.value">저장 중...</span>
+              <span v-else>{{ r.label }}</span>
+            </button>
+          </div>
+          <textarea
+            v-model="battleNote"
+            placeholder="메모 (선택)"
+            rows="2"
+            class="mt-3 w-full bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500 resize-none"
+            style="font-size: 16px"
+          />
+        </template>
+
+        <!-- 비로그인 상태 -->
+        <div v-else class="text-center py-2">
+          <p class="text-gray-400 text-sm">
+            <RouterLink to="/login" class="text-blue-400 hover:underline font-semibold">로그인</RouterLink>하면 배틀 결과를 기록하고 전적을 확인할 수 있습니다.
+          </p>
         </div>
-        <textarea
-          v-model="battleNote"
-          placeholder="메모 (선택)"
-          rows="2"
-          class="mt-3 w-full bg-surface-700 border border-surface-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-blue-500 resize-none"
-          style="font-size: 16px"
-        />
       </div>
     </section>
 
@@ -229,10 +250,11 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useBattleStore } from '@/stores/battle.js'
 import { useRosterStore } from '@/stores/roster.js'
+import { useAuthStore } from '@/stores/auth.js'
 import { getMatchup } from '@/utils/typeChart.js'
 import { effectiveStats } from '@/utils/recommend.js'
 import MatchupCard from '@/components/battle/MatchupCard.vue'
@@ -242,6 +264,14 @@ import TypeBadge from '@/components/pokemon/TypeBadge.vue'
 const router = useRouter()
 const battleStore = useBattleStore()
 const rosterStore = useRosterStore()
+const authStore = useAuthStore()
+
+onMounted(async () => {
+  await nextTick()
+  try {
+    ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+  } catch {}
+})
 
 const battleNote = ref('')
 const savedToast = ref(false)

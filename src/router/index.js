@@ -17,19 +17,19 @@ const routes = [
     path: '/',
     name: 'party-builder',
     component: PartyBuilder,
-    meta: { title: '파티 구성', requiresAuth: true }
+    meta: { title: '파티 구성' }
   },
   {
     path: '/roster',
     name: 'roster-select',
     component: RosterSelect,
-    meta: { title: '로스터 선택', requiresAuth: true }
+    meta: { title: '로스터 선택' }
   },
   {
     path: '/battle',
     name: 'battle',
     component: Battle,
-    meta: { title: '배틀', requiresAuth: true }
+    meta: { title: '배틀' }
   },
   {
     path: '/records',

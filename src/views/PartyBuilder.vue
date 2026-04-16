@@ -6,6 +6,14 @@
       <span><b>[업데이트]</b> 전적에서 내 파티 전체 표시 기능이 추가되었습니다. 기존 전적은 데이터 호환 문제로 초기화되었습니다. · 로스터 선택에서 내 조합을 직접 선택해 배틀로 바로 이동할 수 있습니다.</span>
     </div>
 
+    <!-- 비회원 안내 -->
+    <div v-if="!authStore.isLoggedIn" class="flex items-center gap-2 bg-yellow-900/20 border border-yellow-700/40 rounded-lg px-4 py-2.5 text-xs text-yellow-300">
+      <span>💾</span>
+      <span>비회원 모드입니다. 파티는 브라우저에 임시 저장되며 다른 기기에서는 사용할 수 없습니다.
+        <RouterLink to="/login" class="underline font-semibold ml-1">로그인</RouterLink>하면 자동으로 저장됩니다.
+      </span>
+    </div>
+
     <!-- 타이틀 -->
     <div>
       <h1 class="text-2xl font-bold text-white">파티 구성</h1>
@@ -31,6 +39,16 @@
         />
       </div>
     </section>
+
+    <!-- Google AdSense -->
+    <div>
+      <ins class="adsbygoogle"
+        style="display:block"
+        data-ad-client="ca-pub-3610745423535391"
+        data-ad-slot="auto"
+        data-ad-format="auto"
+        data-full-width-responsive="true"></ins>
+    </div>
 
     <!-- 조합 분석 -->
     <section v-if="rosterStore.filledSlots.length >= 3">
@@ -75,29 +93,32 @@
           v-else
           :pokemons="pokemonStore.filteredList"
           :selected-ids="selectedIds"
-          :max-select="6"
+          :max-select="99"
           @select="onPokemonSelect"
         />
       </div>
     </section>
 
-    <!-- 슬롯 선택 모달 -->
+    <!-- 교체 슬롯 선택 모달 (6마리 꽉 찼을 때) -->
     <div v-if="showSlotPicker" class="modal-overlay" @click.self="showSlotPicker = false">
       <div class="modal-content p-5">
-        <h3 class="font-bold text-white mb-4">슬롯 선택</h3>
+        <h3 class="font-bold text-white mb-1">교체할 포켓몬 선택</h3>
+        <p class="text-xs text-gray-500 mb-4">파티에서 내보낼 포켓몬을 선택하세요</p>
         <div class="grid grid-cols-3 gap-2 mb-4">
           <button
-            v-for="i in 6"
+            v-for="(slot, i) in rosterStore.slots"
             :key="i"
-            class="py-3 rounded-lg text-sm font-medium transition-colors"
-            :class="rosterStore.slots[i - 1]
-              ? 'bg-surface-700 text-yellow-400 hover:bg-yellow-900/30'
-              : 'bg-surface-700 text-white hover:bg-blue-600'"
-            @click="assignToSlot(i - 1)"
+            class="flex flex-col items-center gap-1.5 p-3 bg-surface-700 rounded-xl border-2 border-transparent hover:border-red-500 hover:bg-red-900/20 transition-all"
+            @click="assignToSlot(i)"
           >
-            {{ rosterStore.slots[i - 1]
-              ? `슬롯 ${i} (교체)`
-              : `슬롯 ${i}` }}
+            <img
+              v-if="slot?.pokemonId?.imageUrl"
+              :src="slot.pokemonId.imageUrl"
+              class="w-10 h-10 object-contain"
+            />
+            <span class="text-xs text-white text-center leading-tight w-full truncate">
+              {{ slot?.nickname || slot?.pokemonId?.name?.ko }}
+            </span>
           </button>
         </div>
         <button class="btn-secondary w-full" @click="showSlotPicker = false">취소</button>
@@ -115,9 +136,10 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { usePokemonStore } from '@/stores/pokemon.js'
 import { useRosterStore } from '@/stores/roster.js'
+import { useAuthStore } from '@/stores/auth.js'
 import { recommendCombos } from '@/utils/recommend.js'
 import RosterSlot from '@/components/roster/RosterSlot.vue'
 import PokemonEditor from '@/components/roster/PokemonEditor.vue'
@@ -128,6 +150,7 @@ import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
 const pokemonStore = usePokemonStore()
 const rosterStore = useRosterStore()
+const authStore = useAuthStore()
 
 const battleMode = ref('single')
 const showSlotPicker = ref(false)
@@ -143,14 +166,32 @@ const combos = computed(() =>
 )
 const topCombos = computed(() => combos.value.slice(0, 5))
 
-onMounted(() => {
+onMounted(async () => {
   pokemonStore.fetchPokemons()
   rosterStore.fetchRoster()
+  await nextTick()
+  try {
+    ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+  } catch {}
 })
 
 const onPokemonSelect = (pokemon) => {
+  // 이미 파티에 있으면 제거
+  const existingSlot = rosterStore.slots.find(
+    s => s && (s.pokemonId?._id === pokemon._id || s.pokemonId === pokemon._id)
+  )
+  if (existingSlot) {
+    rosterStore.removeSlot(existingSlot._id)
+    return
+  }
+  // 빈 슬롯 있으면 바로 추가, 꽉 찼으면 교체 모달
   pendingPokemon.value = pokemon
-  showSlotPicker.value = true
+  const emptyIndex = rosterStore.slots.findIndex(s => s === null)
+  if (emptyIndex !== -1) {
+    assignToSlot(emptyIndex)
+  } else {
+    showSlotPicker.value = true
+  }
 }
 
 const onSlotClick = async (index) => {
@@ -166,6 +207,8 @@ const assignToSlot = async (index) => {
   if (!pendingPokemon.value) return
   await rosterStore.addToSlot(index, pendingPokemon.value._id)
   pendingPokemon.value = null
+  pokemonStore.searchQuery = ''
+  pokemonStore.selectedTypes = []
 }
 
 const removeSlot = async (id) => {

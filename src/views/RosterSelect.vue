@@ -5,6 +5,14 @@
       <p class="text-sm text-gray-400 mt-1">상대 파티를 입력하고 최적 조합을 추천받으세요</p>
     </div>
 
+    <!-- 비회원 안내 -->
+    <div v-if="!authStore.isLoggedIn" class="flex items-center gap-2 bg-yellow-900/20 border border-yellow-700/40 rounded-lg px-4 py-2.5 text-xs text-yellow-300">
+      <span>💾</span>
+      <span>비회원 모드입니다.
+        <RouterLink to="/login" class="underline font-semibold ml-1">로그인</RouterLink>하면 파티와 전적이 저장됩니다.
+      </span>
+    </div>
+
     <!-- 배틀 모드 선택 -->
     <section class="flex gap-2">
       <button
@@ -279,6 +287,7 @@ import { useRouter } from 'vue-router'
 import { usePokemonStore } from '@/stores/pokemon.js'
 import { useRosterStore } from '@/stores/roster.js'
 import { useBattleStore } from '@/stores/battle.js'
+import { useAuthStore } from '@/stores/auth.js'
 import { recommendCombos } from '@/utils/recommend.js'
 import PokemonSearch from '@/components/pokemon/PokemonSearch.vue'
 import PokemonGrid from '@/components/pokemon/PokemonGrid.vue'
@@ -289,6 +298,7 @@ const router = useRouter()
 const pokemonStore = usePokemonStore()
 const rosterStore = useRosterStore()
 const battleStore = useBattleStore()
+const authStore = useAuthStore()
 
 const showMyComboModal = ref(false)
 const myComboSelection = ref([])

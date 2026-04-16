@@ -126,16 +126,19 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
+import { useRosterStore } from '@/stores/roster.js'
 
 const router = useRouter()
 const authStore = useAuthStore()
+const rosterStore = useRosterStore()
 
-onMounted(() => {
+onMounted(async () => {
+  await nextTick()
   try {
-    (window.adsbygoogle = window.adsbygoogle || []).push({})
+    ;(window.adsbygoogle = window.adsbygoogle || []).push({})
   } catch {}
 })
 
@@ -163,6 +166,7 @@ async function handleLogin() {
   loading.value = true
   try {
     await authStore.login(username.value, password.value)
+    await rosterStore.migrateFromLocal()
     router.push('/')
   } catch (e) {
     errorMsg.value = e.response?.data?.error || '로그인에 실패했습니다.'
@@ -180,6 +184,7 @@ async function handleRegister() {
   loading.value = true
   try {
     await authStore.register(username.value, password.value, confirmPassword.value)
+    await rosterStore.migrateFromLocal()
     router.push('/')
   } catch (e) {
     errorMsg.value = e.response?.data?.error || '회원가입에 실패했습니다.'
