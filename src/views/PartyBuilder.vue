@@ -3,7 +3,7 @@
     <!-- 업데이트 공지 -->
     <div class="flex items-center gap-2 bg-blue-900/30 border border-blue-700/40 rounded-lg px-4 py-2.5 text-xs text-blue-300">
       <span>📢</span>
-      <span><b>[업데이트]</b> 에이스 선택 기능이 추가되었습니다. 6마리를 모두 선택하면 조합에 반드시 포함할 에이스 포켓몬을 지정할 수 있습니다.</span>
+      <span><b>[업데이트]</b> 에이스 선택 기능이 추가되었습니다. 내 파티에서 조합에 반드시 포함할 에이스 포켓몬을 지정할 수 있습니다.</span>
     </div>
 
     <!-- 비회원 안내 -->
