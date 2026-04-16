@@ -205,14 +205,18 @@
             <div
               v-for="slot in rec.combo"
               :key="slot._id"
-              class="flex flex-col items-center gap-1 p-2 bg-surface-700 rounded-lg"
+              class="relative flex flex-col items-center gap-1 p-2 rounded-lg"
+              :class="rosterStore.aceSlotId && slot._id === rosterStore.aceSlotId
+                ? 'bg-yellow-900/30 ring-2 ring-yellow-400'
+                : 'bg-surface-700'"
             >
+              <span v-if="rosterStore.aceSlotId && slot._id === rosterStore.aceSlotId" class="absolute -top-2 left-1/2 -translate-x-1/2 text-xs leading-none">⭐</span>
               <img
                 v-if="slot.pokemonId?.imageUrl"
                 :src="slot.pokemonId.imageUrl"
                 class="w-10 h-10 object-contain"
               />
-              <p class="text-xs font-medium text-white text-center">
+              <p class="text-xs font-medium text-center" :class="rosterStore.aceSlotId && slot._id === rosterStore.aceSlotId ? 'text-yellow-300' : 'text-white'">
                 {{ slot.nickname || slot.pokemonId?.name?.ko }}
               </p>
               <div class="flex gap-0.5 flex-wrap justify-center">

@@ -15,8 +15,18 @@
 
     <!-- 포켓몬 목록 -->
     <div class="flex gap-2 mb-4 flex-wrap">
-      <div v-for="slot in combo.combo" :key="slot._id" class="flex flex-col items-center gap-1">
-        <div class="w-14 h-14 bg-surface-700 rounded-lg flex items-center justify-center">
+      <div
+        v-for="slot in combo.combo"
+        :key="slot._id"
+        class="relative flex flex-col items-center gap-1"
+      >
+        <span v-if="aceSlotId && slot._id === aceSlotId" class="absolute -top-2 left-1/2 -translate-x-1/2 text-xs leading-none z-10">⭐</span>
+        <div
+          class="w-14 h-14 rounded-lg flex items-center justify-center"
+          :class="aceSlotId && slot._id === aceSlotId
+            ? 'bg-yellow-900/40 ring-2 ring-yellow-400'
+            : 'bg-surface-700'"
+        >
           <img
             v-if="slot.pokemonId?.imageUrl"
             :src="slot.pokemonId.imageUrl"
@@ -25,7 +35,7 @@
           />
           <span v-else class="text-xl">&#x2753;</span>
         </div>
-        <p class="text-xs text-center text-gray-300 leading-tight">
+        <p class="text-xs text-center leading-tight" :class="aceSlotId && slot._id === aceSlotId ? 'text-yellow-300 font-semibold' : 'text-gray-300'">
           {{ slot.nickname || slot.pokemonId?.name?.ko || slot.name?.ko }}
         </p>
         <div class="flex gap-0.5 flex-wrap justify-center">
@@ -81,7 +91,8 @@ import TypeBadge from '@/components/pokemon/TypeBadge.vue'
 const props = defineProps({
   combo: { type: Object, required: true },
   index: { type: Number, default: 0 },
-  showSelect: { type: Boolean, default: false }
+  showSelect: { type: Boolean, default: false },
+  aceSlotId: { type: String, default: null }
 })
 
 defineEmits(['select'])

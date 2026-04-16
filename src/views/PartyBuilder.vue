@@ -105,6 +105,7 @@
           :key="i"
           :combo="combo"
           :index="i"
+          :ace-slot-id="rosterStore.aceSlotId"
         />
       </div>
     </section>
