@@ -51,7 +51,7 @@
     </div>
 
     <!-- 조합 분석 -->
-    <section v-if="rosterStore.filledSlots.length >= 3">
+    <section v-if="rosterStore.isFull">
       <div class="flex items-center justify-between mb-3">
         <h2 class="text-sm font-semibold text-gray-300 uppercase tracking-wide">
           가능한 조합 분석
