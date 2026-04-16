@@ -76,7 +76,7 @@ export function effectiveStats(slot) {
 
 // ─── 슬롯의 실질 공격 기술 타입 목록 ─────────────────────────
 // 선택된 기술이 있으면 그 타입 사용, 없으면 포켓몬 자체 타입 fallback
-function attackMoveTypes(slot) {
+export function attackMoveTypes(slot) {
   const selected = (slot.moves || []).filter(Boolean)
   const pool     = slot.pokemonId?.moves || []
   if (selected.length && pool.length) {
@@ -90,7 +90,7 @@ function attackMoveTypes(slot) {
 }
 
 // ─── 내 슬롯이 상대 포켓몬에게 낼 수 있는 최대 공격 배수 ──────
-function myBestAtkMult(mySlot, oppPokemon) {
+export function myBestAtkMult(mySlot, oppPokemon) {
   const moveTypes = attackMoveTypes(mySlot)
   const defTypes  = oppPokemon.types || []
   return moveTypes.reduce((best, mt) => Math.max(best, atkVsDef(mt, defTypes)), 0)

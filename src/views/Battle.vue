@@ -165,13 +165,13 @@
                 :class="isOpponentDisabled(opp) ? 'opacity-20' : isOpponentSelected(opp) ? 'bg-blue-900/10' : ''"
               >
                 <div class="flex flex-col items-center gap-0.5">
-                  <!-- 공격상성: 내가 상대를 때릴 때 -->
+                  <!-- 공격상성: 내가 상대를 때릴 때 (기술 타입 반영) -->
                   <span
                     class="inline-block px-0.5 md:px-1.5 py-0 md:py-0.5 rounded text-[9px] md:text-xs font-bold leading-tight"
-                    :class="matchupCellClass(getMatchup((slot.pokemonId || slot).types || [], opp.types || []))"
+                    :class="matchupCellClass(getAtkMatchup(slot, opp))"
                     title="공격"
                   >
-                    ↑{{ matchupCellLabel(getMatchup((slot.pokemonId || slot).types || [], opp.types || [])) }}
+                    ↑{{ matchupCellLabel(getAtkMatchup(slot, opp)) }}
                   </span>
                   <!-- 방어상성: 상대가 나를 때릴 때 -->
                   <span
@@ -256,7 +256,7 @@ import { useBattleStore } from '@/stores/battle.js'
 import { useRosterStore } from '@/stores/roster.js'
 import { useAuthStore } from '@/stores/auth.js'
 import { getMatchup } from '@/utils/typeChart.js'
-import { effectiveStats } from '@/utils/recommend.js'
+import { effectiveStats, myBestAtkMult } from '@/utils/recommend.js'
 import MatchupCard from '@/components/battle/MatchupCard.vue'
 import ActivePokemon from '@/components/battle/ActivePokemon.vue'
 import TypeBadge from '@/components/pokemon/TypeBadge.vue'
@@ -291,9 +291,11 @@ const myComboDisplay = computed(() => {
   return rosterStore.filledSlots
 })
 
+// 상성표 공격칸: 기술 타입 반영 (없으면 포켓몬 타입 fallback)
+const getAtkMatchup = (slot, opp) => myBestAtkMult(slot, opp)
+
 const getMyBestMatchup = (opp) => {
-  const myPokemons = myComboDisplay.value.map(p => p.pokemonId || p)
-  const matchups = myPokemons.map(p => getMatchup(p.types || [], opp.types || []))
+  const matchups = myComboDisplay.value.map(slot => myBestAtkMult(slot, opp))
   return matchups.length ? Math.max(...matchups) : 1
 }
 
@@ -324,17 +326,14 @@ const toggleActive = (pokemon) => {
   battleStore.activeMine = isMyActive(pokemon) ? null : p
 }
 
-// 내 조합의 상대 포켓몬 대처 목록
+// 내 조합의 상대 포켓몬 대처 목록 (기술 타입 반영)
 const counterList = computed(() => {
   if (!battleStore.activeOpponent) return []
   return myComboDisplay.value
-    .map(slot => {
-      const p = slot.pokemonId || slot
-      return {
-        pokemon: p,
-        matchup: getMatchup(p.types || [], battleStore.activeOpponent.types || [])
-      }
-    })
+    .map(slot => ({
+      pokemon: slot.pokemonId || slot,
+      matchup: myBestAtkMult(slot, battleStore.activeOpponent)
+    }))
     .sort((a, b) => b.matchup - a.matchup)
 })
 
