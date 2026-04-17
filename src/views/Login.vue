@@ -1,6 +1,6 @@
 <template>
-  <div class="min-h-screen px-4 bg-surface-900">
-    <div class="w-full max-w-sm mx-auto pt-[25vh]">
+  <div class="min-h-screen overflow-y-auto px-4 pb-10 bg-surface-900">
+    <div class="w-full max-w-sm mx-auto pt-12 sm:pt-[25vh]">
       <!-- 로고 -->
       <div class="text-center mb-8">
         <span class="text-5xl">⚔️</span>
@@ -118,8 +118,8 @@
           style="display:block"
           data-ad-client="ca-pub-3610745423535391"
           data-ad-slot="auto"
-          data-ad-format="auto"
-          data-full-width-responsive="true"></ins>
+          data-ad-format="rectangle"
+          data-full-width-responsive="false"></ins>
       </div>
     </div>
   </div>
